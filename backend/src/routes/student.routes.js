@@ -1,5 +1,4 @@
 import express from "express";
-import { supabase } from "../config/supabase.js";
 import {
     createStudent,
     getAllStudents,
@@ -11,11 +10,13 @@ import {
 
 const router = express.Router();
 
+router.post("/verify", verifyStudent);
+
 router.post("/", createStudent);
 router.get("/", getAllStudents);
 router.get("/:id", getStudentById);
 router.put("/:id", updateStudent);
 router.delete("/:id", deleteStudent);
-router.post("/verify", verifyStudent);
+
 
 export default router;
