@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="admission-letter.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="../template/assets/images/cul_logo_rect.png" alt="Logo" width="100">
+            <h1>Caleb University</h1>
+            <p>Office of the Registrar
+                <br>
+                Ikorodu, Ibadan-Ijebu Ode Rd, Imota, Lagos State, Nigeria
+            </p>
+        </div>
+        <hr class="hr1">
+        <section class="intro">
+            <div>
+                <p>
+                    Ref: FUT/ADM/REG/2026
+                    <br>
+                    Date: <strong>{{createdAt}}</strong>
+                </p>
+            </div>
+        </section>
+
+        <section class="body">
+            <h2>
+                Letter of Admission
+            </h2>
+             <p>
+                Dear <strong>{{full_name}}</strong>,
+            </p>
+            <p>
+                Following your application for admission into Caleb University for the 2025/2026 academic session, I am pleased to inform you that you have been offered provisional admission to pursue a degree programme in  <strong>{{course}}</strong> in the <strong>{{department}}</strong> at our esteemed institution.
+            </p>
+
+            <section class="admission-det">
+                <h3>
+                    Admission Details
+                </h3>
+                <p>Admission Number: <strong>{{admission_number}}</strong></p>
+                <p>Application Number: <strong>{{application_number}}</strong></p>
+                <p>Course of Study: <strong>{{course_of_study}}</strong></p>
+                <p>Department: <strong>{{department}}</strong></p>
+                <p>Mode of entry: <strong>{{mode_of_entry}}</strong></p>
+                <p>Academic Session: <strong>2025/2026</strong></p>
+            </section>
+
+            <p>
+                This admission is subject to the verification of your credentials and payment of the prescribed acceptance and other fees. You are required to complete your registration online through the university portal within two weeks of receiving this letter.
+            </p>
+
+            <p>
+                Please note that failure to accept this offer within the stipulated time will result in the offer being withdrawn and given to another candidate.
+            </p>
+
+            <p>
+                On behalf of the University Management, I congratulate you on this achievement and wish you a successful academic career.
+            </p>
+        </section>
+        <section class="closing">
+            <p>
+                Yours sincerely,
+            </p>
+            <br>
+            <img src="#" alt="Registrar's Signature" width="150">
+            <p>
+                <hr>
+                Dr. Mayo Olumeru
+                <br>
+                <span>Registrar</span>
+            </p>
+        </section>
+    </div>
+</body>
+</html>
