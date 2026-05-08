@@ -8,13 +8,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+//Mount routes
+app.use("/api/students", studentRoutes);
+app.use("/api/admission-letters", admissionLetterRoutes);
+
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-//Mount routes
-app.use("/api/students", studentRoutes);
-app.use("/api/admission-letters", admissionLetterRoutes);
+
 
 app.get("/", (req, res) => {
   res.send("API is running...");

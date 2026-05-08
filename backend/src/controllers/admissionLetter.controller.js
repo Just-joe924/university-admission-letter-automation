@@ -1,5 +1,5 @@
 import { generateAdmissionLetterPDF } from "../services/pdf.service.js";
-import { uploadAdmissionLetter } from "../services/storage.service.js";
+import { uploadAdmissionLetterService } from "../services/storage.service.js";
 import { getStudentByIdService } from "../services/student.service.js";
 import { 
     createAdmissionLetterService, 
@@ -34,16 +34,10 @@ export const generateAdmissionLetter = async (req, res) => {
 
     const fileName = `${student.admission_number}-${Date.now()}.pdf`;
     const pdfBuffer = await generateAdmissionLetterPDF(student);
-    const pdfUrl = await uploadAdmissionLetter(
+    const pdfUrl = await uploadAdmissionLetterService(
         pdfBuffer,
         fileName
     );
-
-    const { data, error } = await createAdmissionLetterService({    
-        studentId: student.id,
-        letterReference,
-        pdfUrl
-    });
 
     const letterReference = generateLetterReference(student);
 
