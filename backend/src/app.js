@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import studentRoutes from "./routes/student.routes.js";
+import admissionLetterRoutes from "./routes/admissionLetter.routes.js";
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.get('/health', (req, res) => {
 
 //Mount routes
 app.use("/api/students", studentRoutes);
+app.use("/api/admission-letters", admissionLetterRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running...");
