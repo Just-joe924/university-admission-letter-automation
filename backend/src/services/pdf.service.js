@@ -2,6 +2,7 @@ import {puppeteer} from "puppeteer";
 import fs from "fs";
 import path from "path";
 
+
 export const generateAdmissionLetterPDF = async (student) => {
     const templatePath = path.resolve("src/template/admission-letter.html");
 
@@ -29,4 +30,4 @@ export const generateAdmissionLetterPDF = async (student) => {
     await browser.close();
 
     return pdfBuffer;
-}
+};
