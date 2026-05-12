@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import studentRoutes from "./routes/student.routes.js";
 import admissionLetterRoutes from "./routes/admissionLetter.routes.js";
+import authRoutes from "./routes/auth.routes.js"
 
 const app = express();
 
@@ -11,6 +12,7 @@ app.use(express.json());
 //Mount routes
 app.use("/api/students", studentRoutes);
 app.use("/api/admission-letters", admissionLetterRoutes);
+app.use("/api/auth/admin", authRoutes);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });

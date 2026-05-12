@@ -12,11 +12,11 @@ const router = express.Router();
 
 router.post("/verify", verifyStudent);
 
-router.post("/api/students", createStudent);
-router.get("/api/students", getAllStudents);
-router.get("/api/students/:id", getStudentById);
-router.put("/api/students/:id", updateStudent);
-router.delete("/api/students/:id", deleteStudent);
+router.post("/", createStudent);
+router.get("/", getAllStudents);
+router.get("/:id", getStudentById);
+router.put("/:id", updateStudent);
+router.delete("/:id", deleteStudent);
 
 
 export default router;
