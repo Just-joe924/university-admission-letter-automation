@@ -9,9 +9,7 @@ import {
 import { sendAdmissionLetterEmailService } from "../services/email.service.js";
 import { createEmailLogService } from "../services/emailLog.service.js";
 
-const generateLetterReference = (student) => {
-  return `ADM-${student.admission_number}-${Date.now()}`;
-};
+import { generateLetterReference } from "../utils/generateReference.js";
 
 export const generateAdmissionLetter = async (req, res) => {
     const { studentId } = req.params;
