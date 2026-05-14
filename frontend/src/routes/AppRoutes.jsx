@@ -10,6 +10,7 @@ import VerifyAdmission from "../pages/student/VerifyAdmission";
 import AdmissionSuccess from "../pages/student/AdmissionSuccess";
 
 import AdminLogin from "../pages/admin/AdminLogin";
+import AdminSignup from "../pages/admin/AdminSignup";
 import Dashboard from "../pages/admin/Dashboard";
 import Students from "../pages/admin/Students";
 import StudentDetails from "../pages/admin/StudentDetails";
@@ -46,7 +47,7 @@ const router = createBrowserRouter([
     },
 
     {
-        path:"/admin/login",
+        path:"/admin/signup",
         element:<AdminSignup/>
     },
 
