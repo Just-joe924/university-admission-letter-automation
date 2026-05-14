@@ -4,6 +4,7 @@ import studentRoutes from "./routes/student.routes.js";
 import admissionLetterRoutes from "./routes/admissionLetter.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
+import emailRoutes from "./routes/email.routes.js";
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use("/api/students", studentRoutes);
 app.use("/api/admission-letters", admissionLetterRoutes);
 app.use("/api/auth/admin", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/email-logs", emailRoutes);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });

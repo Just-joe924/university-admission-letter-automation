@@ -17,3 +17,22 @@ export const createEmailLogService = async (studentId, admissionLetterId, recipi
 
     return { data, error };
 }
+
+export const getAllEmailLogsService = async () => {
+  const { data, error } = await supabase
+    .from("email_logs")
+    .select("*")
+    .order("sent_at", { ascending: false });
+
+  return { data, error };
+};
+
+export const getEmailLogsByStudentIdService = async (studentId) => {
+  const { data, error } = await supabase
+    .from("email_logs")
+    .select("*")
+    .eq("student_id", studentId)
+    .order("sent_at", { ascending: false });
+
+  return { data, error };
+};
