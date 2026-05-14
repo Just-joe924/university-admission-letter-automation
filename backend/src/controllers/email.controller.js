@@ -1,7 +1,7 @@
 import { 
     getAllEmailLogsService,
     getEmailLogsByStudentIdService,
-} from "../services/emailLog.service";
+} from "../services/emailLog.service.js";
 
 export const getAllEmailLogs = async (req, res) => {
   const { data, error } = await getAllEmailLogsService();
