@@ -7,35 +7,15 @@ import {
   verifyStudentService,
 } from "../services/student.service.js";
 
+import {validateStudentInput} from "../utils/validateStudent.js"
+
 
 export const createStudent = async (req, res) => {
-  const {
-    full_name,
-    email,
-    department,
-    course,
-    mode_of_entry,
-    admission_number,
-    application_number,
-  } = req.body;
+  const validation = validateStudentInput(req.body);
 
-  if (
-    !full_name ||
-    !email ||
-    !department ||
-    !course ||
-    !mode_of_entry ||
-    !admission_number ||
-    !application_number
-  ) {
+  if (!validation.valid) {
     return res.status(400).json({
-      message: "Required fields are missing",
-    });
-  }
-
-  if (!["UTME", "Direct Entry"].includes(mode_of_entry)) {
-    return res.status(400).json({
-      message: "Mode of entry must be either UTME or Direct Entry",
+      message: validation.message,
     });
   }
 
