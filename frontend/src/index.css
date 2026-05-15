@@ -1,6 +1,5 @@
-@import "tailwindcss";
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+@import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -144,7 +143,7 @@ body{
   }
 
   body {
-    @apply bg-background text-foreground anatialiased;
+    @apply bg-background text-foreground antialiased;
     min-height:100vh;
   }
 
