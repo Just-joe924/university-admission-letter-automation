@@ -1,212 +1,206 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  CircleCheckBig,
+  FileText,
+  Download,
+  Mail,
+  UserRound,
+} from "lucide-react";
+import culLogo from "../../assets/images/cul_logo_rect.png";
 
 /**
  * AdmissionSuccess Page
  * ──────────────────────
- * Displays the verified student's admission details in a structured card.
- * Data is received via React Router's location.state (passed from VerifyAdmission).
- *
- * If no student data is found in state, the user is redirected back to /student.
+ * Matches the provided UI design exactly:
+ * - White header with university branding
+ * - Green "Verification Successful!" banner
+ * - Admission Details card with 2-column label/value grid
+ * - "Next Steps" action buttons section
+ * - "← Return to Home" link
  */
 export default function AdmissionSuccess() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Pull student from React Router state
   const student = location.state?.student;
 
-  // Redirect guard: if no student data, send back to the verification page
+  // Redirect if no student data (e.g. direct URL access)
   useEffect(() => {
     if (!student) {
       navigate("/student", { replace: true });
     }
   }, [student, navigate]);
 
-  // Don't render anything while redirecting
   if (!student) return null;
 
-  // ── DetailRow: reusable label/value display ──────────────────────────────────
-  const DetailRow = ({ label, value, mono = false }) => (
-    <div className="py-3.5 px-4 rounded-lg bg-muted">
-      <p className="text-xs font-semibold uppercase tracking-widest mb-1 text-muted-foreground">
-        {label}
-      </p>
-      <p
-        className={[
-          "text-sm font-semibold text-primary",
-          mono ? "font-mono tracking-wider" : "",
-        ].join(" ")}
-      >
-        {value || "—"}
-      </p>
+  // ── Reusable detail cell ─────────────────────────────────────────────────────
+  const DetailCell = ({ label, value, mono = false, children }) => (
+    <div>
+      <p className="text-xs text-muted-foreground mb-1">{label}</p>
+      {children ?? (
+        <p className={["text-sm font-medium text-foreground", mono ? "font-mono" : ""].join(" ")}>
+          {value || "—"}
+        </p>
+      )}
     </div>
   );
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ── Reusable outlined action button ─────────────────────────────────────────
+  const OutlineButton = ({ onClick, icon, children }) => (
+    <button
+      onClick={onClick}
+      className="w-full py-3 rounded-lg text-sm font-medium text-foreground border border-border hover:bg-muted transition-colors flex items-center justify-center gap-2"
+    >
+      {icon}
+      {children}
+    </button>
+  );
+
+  // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col bg-background">
 
-      {/* ── Header ── */}
-      <header className="py-5 px-6 flex items-center justify-between bg-primary shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full flex items-center justify-center text-primary-foreground font-bold bg-white/15 border border-white/25">
-            ⚜
-          </div>
-          <span
-            className="text-primary-foreground font-semibold text-sm tracking-widest uppercase"
-            style={{ fontFamily: "Georgia, serif" }}
-          >
-            University Admissions Portal
-          </span>
+      {/* ── Top Header (same as VerifyAdmission) ── */}
+      <header className="bg-card border-b border-border px-6 py-3 flex items-center gap-3">
+        <div className="w-40 h-20 flex items-center justify-center flex-shrink-0">
+            <img className = "w-full h-full" src= {culLogo}/>
         </div>
-
-        <button
-          onClick={() => navigate("/")}
-          className="text-primary-foreground/60 hover:text-primary-foreground text-xs tracking-wide transition-colors flex items-center gap-1.5"
-        >
-          <span>←</span> Home
-        </button>
+        <div>
+          <p className="font-bold text-sm text-foreground leading-tight">
+            Caleb University
+          </p>
+          <p className="text-xs text-muted-foreground leading-tight">
+            Admission Verification Portal
+          </p>
+        </div>
       </header>
 
-      {/* ── Main ── */}
-      <main className="flex-1 flex items-start justify-center px-4 py-12">
-        <div className="w-full max-w-2xl">
+      {/* ── Page Body ── */}
+      <main className="flex-1 px-4 py-8">
+        <div className="max-w-lg mx-auto">
 
-          {/* ── Success Banner ── */}
-          <div className="rounded-xl px-6 py-4 mb-6 flex items-center gap-4 bg-primary shadow-lg shadow-primary/25">
-            {/* Checkmark circle */}
-            <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-white/15 border-2 border-white/40">
-              <svg
-                className="w-6 h-6 text-primary-foreground"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2.5}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
+          {/* ── Green Success Banner ── */}
+          <div className="rounded-t-xl px-6 py-5 flex items-center gap-4 bg-green-500">
+            {/* Circle checkmark */}
+            <div className="w-16 h-16 rounded-md flex items-center justify-center flex-shrink-0 bg-white/20">
+              <CircleCheckBig  className ="text-white w-8 h-8" />
             </div>
-
             <div>
-              <h1
-                className="text-primary-foreground font-bold text-lg"
-                style={{ fontFamily: "Georgia, serif" }}
-              >
-                Admission Verified
+              <h1 className="text-white font-bold text-xl leading-tight">
+                Verification Successful!
               </h1>
-              <p className="text-primary-foreground/70 text-sm mt-0.5">
-                Congratulations, {student.full_name.split(" ")[0]}! Your admission has been confirmed.
+              <p className="text-white/80 text-sm mt-0.5">
+                Your admission has been confirmed
               </p>
-            </div>
-
-            {/* Verified badge */}
-            <div className="ml-auto flex-shrink-0">
-              <span className="text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider bg-green-500 text-white">
-                ✓ Verified
-              </span>
             </div>
           </div>
 
-          {/* ── Details Card ── */}
-          <div className="bg-card rounded-2xl overflow-hidden border border-border shadow-sm">
+          {/* ── Admission Details Card ── */}
+          <div className="bg-card px-6 rounded-b-xl border border-border shadow-lg overflow-hidden">
 
-            {/* Card top bar */}
-            <div className="px-6 py-4 flex items-center justify-between border-b border-border">
-              <div>
-                <h2
-                  className="font-bold text-base text-primary"
-                  style={{ fontFamily: "Georgia, serif" }}
-                >
-                  Admission Details
-                </h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Academic Session {student.session}
-                </p>
+            {/* Card heading */}
+            <div className="px-5 pb-4 pt-6 flex items-center gap-2">
+              <UserRound className="w-5 h-5" />
+              <h2 className="text-sm font-semibold text-foreground">Admission Details</h2>
+            </div>
+
+            {/* Detail rows — 2-column grid, each row separated by a border */}
+            <div className="">
+
+              {/* Row 1: Full Name | Mode of Entry */}
+              <div className="grid grid-cols-2 px-5 py-1 gap-4">
+                <DetailCell label="Full Name" value={student.full_name} />
+                <DetailCell label="Mode of Entry">
+                  {/* Pill badge */}
+                  <span className="inline-block mt-0.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent text-accent-foreground border border-secondary/20">
+                    {student.mode_of_entry}
+                  </span>
+                </DetailCell>
               </div>
-              {/* Mode of Entry badge */}
-              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-accent text-accent-foreground border border-secondary/20">
-                {student.mode_of_entry}
-              </span>
+
+              {/* Row 2: Email Address | Application Number */}
+              <div className="grid grid-cols-2 px-5 py-2 gap-4">
+                <DetailCell label="Email Address" value={student.email} />
+                <DetailCell label="Application Number" value={student.application_number} mono />
+              </div>
+
+              {/* Row 3: Department | Admission Number */}
+              <div className="grid grid-cols-2 px-5 py-2 gap-4">
+                <DetailCell label="Department" value={student.department} />
+                <DetailCell label="Admission Number" value={student.admission_number} mono />
+              </div>
+
+              {/* Row 4: Course of Study | Academic Session */}
+              <div className="grid grid-cols-2 px-5 pt-2 pb-6 gap-4">
+                <DetailCell label="Course of Study" value={student.course} />
+                <DetailCell label="Academic Session" value={student.session} />
+              </div>
+
+              {/* Row 5: Admission Status — full width with green badge on the right */}
+              <div className="px-5 py-3.5 flex items-center justify-between border-t border-border">
+                <p className="text-xs text-muted-foreground">Admission Status:</p>
+                <span className="flex items-center gap-1.5 text-xs font-semibold text-green-600 bg-green-50 p-3 rounded-lg">
+                  <CircleCheckBig  className ="text-green-600 w-4 h-4" />
+                  Verified &amp; Active
+                </span>
+              </div>
+
             </div>
+          </div>
 
-            {/* Detail grid */}
-            <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <DetailRow label="Full Name" value={student.full_name} />
-              <DetailRow label="Email Address" value={student.email} />
-              <DetailRow label="Department" value={student.department} />
-              <DetailRow label="Course of Study" value={student.course} />
-              <DetailRow label="Admission Number" value={student.admission_number} mono />
-              <DetailRow label="Application Number" value={student.application_number} mono />
-            </div>
+          {/* ── Next Steps Section ── */}
+          <div className="bg-card rounded-xl my-6 border border-border shadow-lg overflow-hidden p-3 text-accent-foreground">
+            <h2 className="text-sm font-bold text-foreground m-3">Next Steps</h2>
 
-            {/* Email / status strip */}
-            <div className="mx-6 mb-6 rounded-lg px-4 py-3 flex items-center gap-3 bg-green-50 border border-green-200">
-              <svg
-                className="w-4 h-4 flex-shrink-0 text-green-600"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <p className="text-sm text-green-800">
-                <span className="font-semibold">Verification complete. </span>
-                {student.email_sent
-                  ? "A confirmation email has been sent to your inbox."
-                  : "Your admission record is confirmed in our system."}
-              </p>
-            </div>
+            <div className="space-y-3">
 
-            {/* ── Action Buttons ── */}
-            <div className="px-6 pb-6 flex flex-col sm:flex-row gap-3">
-
-              {/* Download Admission Letter */}
+              {/* View Admission Letter — filled navy (disabled if not generated) */}
               <button
                 disabled={!student.letter_generated}
-                title={
-                  !student.letter_generated
-                    ? "Your admission letter is being generated. Check back soon."
-                    : ""
-                }
-                className={[
-                  "flex-1 py-3 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all",
-                  student.letter_generated
-                    ? "bg-primary text-primary-foreground hover:bg-secondary shadow-md shadow-primary/25"
-                    : "bg-muted text-muted-foreground cursor-not-allowed",
-                ].join(" ")}
+                title={!student.letter_generated ? "Your admission letter is being prepared." : ""}
+                className="w-full py-3 rounded-lg text-sm font-semibold text-primary-foreground bg-primary hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                {student.letter_generated ? "Download Admission Letter" : "Letter Not Yet Available"}
+                {/* Document icon */}
+                <FileText className = "w-5 h-5" />
+                View Admission Letter
               </button>
 
-              {/* Return to Homepage */}
-              <button
-                onClick={() => navigate("/")}
-                className="flex-1 py-3 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 border border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+              {/* Download as PDF */}
+              <OutlineButton
+                onClick={() => {}}
+                icon={
+                  <Download className = "w-5 h-5"/>
+                }
               >
-                ← Return to Homepage
-              </button>
+                Download as PDF
+              </OutlineButton>
+
+              {/* Send to Email */}
+              <OutlineButton
+                onClick={() => {}}
+                icon={
+                  <Mail className = "w-5 h-5"/>
+                }
+              >
+                Send to Email
+              </OutlineButton>
+
             </div>
 
-            {/* Explanatory note when letter isn't ready */}
-            {!student.letter_generated && (
-              <p className="text-center text-xs text-muted-foreground pb-5 px-6">
-                📄 Your admission letter is being prepared. Please check back in 24–48 hours or contact the admissions office.
-              </p>
-            )}
+            {/* Return to Home link */}
+            <div className="text-center m-5 ">
+              <button
+                onClick={() => navigate("/")}
+                className="text-sm text-secondary hover:text-foreground transition-colors flex items-center justify-center gap-1 mx-auto"
+              >
+               <ArrowLeft className="w-4 h-4"/>
+                Return to Home
+              </button>
+            </div>
           </div>
+
         </div>
       </main>
     </div>

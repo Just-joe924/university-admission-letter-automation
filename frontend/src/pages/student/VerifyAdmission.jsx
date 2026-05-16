@@ -1,24 +1,26 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { verifyStudent } from "../../services/studentApi";
+import {
+  ArrowLeft
+} from "lucide-react";
+import culLogo from "../../assets/images/cul_logo_rect.png";
+
 
 /**
  * VerifyAdmission Page
  * ─────────────────────
- * Allows a student to verify their admission by entering their
- * registered email and application number.
- *
- * On success → navigates to /admission-success with student data.
- * On failure → shows the error message returned by the backend.
+ * Matches the provided UI design exactly:
+ * - White top header with university branding
+ * - "← Back to Home" navigation link
+ * - Centered card with a navy banner, form fields, submit button,
+ *   an info notice, and a demo credentials box.
  */
 export default function VerifyAdmission() {
   const navigate = useNavigate();
 
-  // Form field values
   const [email, setEmail] = useState("");
   const [applicationNumber, setApplicationNumber] = useState("");
-
-  // UI state
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
@@ -36,15 +38,14 @@ export default function VerifyAdmission() {
     if (!applicationNumber.trim()) {
       newErrors.applicationNumber = "Application number is required.";
     } else if (!/^APP\d+$/i.test(applicationNumber.trim())) {
-      newErrors.applicationNumber =
-        "Application number must follow the format: APP2025001.";
+      newErrors.applicationNumber = "Must follow the format: APP2025001.";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // ── Submit Handler ───────────────────────────────────────────────────────────
+  // ── Submit ───────────────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerError("");
@@ -58,178 +59,199 @@ export default function VerifyAdmission() {
         application_number: applicationNumber.trim().toUpperCase(),
       });
 
-      navigate("/admission-success", { state: { student: data.student } });
+      console.log("Verification response:", data);
+      
+      navigate("/success", { state: { student: data.student } });
     } catch (err) {
       const message =
-        err.response?.data?.message ||
-        "Something went wrong. Please try again.";
+        err.response?.data?.message || "Something went wrong. Please try again.";
       setServerError(message);
     } finally {
       setLoading(false);
     }
   };
 
-  // ── Reusable field component ─────────────────────────────────────────────────
-  const Field = ({ id, label, type = "text", value, onChange, placeholder, error, mono = false }) => (
-    <div>
-      <label htmlFor={id} className="block text-sm font-semibold mb-1.5 text-primary">
-        {label}
-      </label>
-      <input
-        id={id}
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        disabled={loading}
-        autoComplete={type === "email" ? "email" : "off"}
-        className={[
-          "w-full px-4 py-3 rounded-lg text-sm outline-none transition-all",
-          "bg-input-background text-foreground placeholder:text-muted-foreground",
-          "border focus:border-primary focus:bg-card focus:ring-3 focus:ring-accent",
-          error ? "border-destructive bg-destructive/5" : "border-border",
-          mono ? "font-mono tracking-wider" : "",
-          loading ? "opacity-60 cursor-not-allowed" : "",
-        ].join(" ")}
-      />
-      {error && (
-        <p className="mt-1.5 text-xs text-destructive">{error}</p>
-      )}
-    </div>
-  );
-
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex flex-col bg-primary">
+    // Page background — light grey
+    <div className="min-h-screen flex flex-col bg-background">
 
-      {/* ── Header ── */}
-      <header className="py-5 px-6 flex items-center justify-center border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full flex items-center justify-center text-primary-foreground font-bold bg-white/15 border border-white/30">
-            ⚜
-          </div>
-          <span
-            className="text-primary-foreground font-semibold tracking-widest text-sm uppercase"
-            style={{ fontFamily: "Georgia, serif" }}
-          >
-            University Admissions Portal
-          </span>
+      {/* ── Top Header ── */}
+      <header className="bg-card border-b border-border px-6 py-3 flex items-center gap-3">
+        {/* Shield logo mark */}
+        <div className="w-40 h-20 flex items-center justify-center flex-shrink-0">
+          <img className = "w-full h-full" src= {culLogo}/>
+        </div>
+
+        {/* University name + subtitle */}
+        <div>
+          <p className="font-bold text-sm text-foreground leading-tight">
+            Caleb University
+          </p>
+          <p className="text-xs text-muted-foreground leading-tight">
+            Admission Verification Portal
+          </p>
         </div>
       </header>
 
-      {/* ── Main ── */}
-      <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
+      {/* ── Page Body ── */}
+      <main className="flex-1 px-4 py-8">
+        <div className="max-w-lg mx-auto">
 
-          {/* Decorative divider */}
-          <div className="flex items-center gap-3 mb-8 justify-center">
-            <div className="h-px flex-1 max-w-16 bg-accent/40" />
-            <span
-              className="text-accent-foreground/40 text-xs tracking-widest uppercase"
-              style={{ fontFamily: "Georgia, serif" }}
-            >
-              Admission Verification
-            </span>
-            <div className="h-px flex-1 max-w-16 bg-accent/40" />
-          </div>
+          {/* ← Back to Home */}
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center gap-1.5 text-sm text-secondary hover:text-foreground transition-colors mb-6"
+          >
+            <ArrowLeft className="w-4 h-4"/>
+            Back to Home
+          </button>
 
-          {/* ── Card ── */}
-          <div className="bg-card rounded-2xl p-8 shadow-2xl">
+          {/* ── Main Card ── */}
+          <div className="bg-card rounded-xl shadow-md border border-border overflow-hidden">
 
-            {/* Card heading */}
-            <div className="mb-7 text-center">
-              <h1
-                className="text-2xl font-bold text-primary mb-2"
-                style={{ fontFamily: "Georgia, serif" }}
-              >
-                Verify Your Admission
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Enter your registered email and application number to confirm your admission status.
-              </p>
+            {/* Navy banner */}
+            <div className="bg-primary px-6 py-5 flex items-center gap-4">
+              {/* Shield icon box */}
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-white/15 border border-white/25">
+                <svg className="w-5 h-5 text-primary-foreground" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 1.944l7 2.917v5.278c0 3.668-2.974 7.088-7 8.417C3.974 17.227 1 13.807 1 10.139V4.861l9-2.917zm0 2.112L3 6.25v3.889c0 2.84 2.338 5.614 7 6.806 4.662-1.192 7-3.966 7-6.806V6.25L10 4.056z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-primary-foreground font-bold text-lg leading-tight">
+                  Admission Verification
+                </h1>
+                <p className="text-primary-foreground/70 text-sm mt-0.5">
+                  Enter your credentials to verify your admission status
+                </p>
+              </div>
             </div>
 
-            {/* ── Server Error Alert ── */}
-            {serverError && (
-              <div className="mb-5 flex items-start gap-3 px-4 py-3 rounded-lg text-sm bg-destructive/8 border border-destructive/20 text-destructive">
-                <span className="mt-0.5 text-base leading-none">⚠</span>
-                <span>{serverError}</span>
+            {/* Form area */}
+            <div className="px-6 py-6">
+
+              {/* Server error */}
+              {serverError && (
+                <div className="mb-5 flex items-start gap-2.5 px-4 py-3 rounded-lg text-sm bg-destructive/8 border border-destructive/25 text-destructive">
+                  <span className="mt-0.5 leading-none">⚠</span>
+                  <span>{serverError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} noValidate className="space-y-5">
+
+                {/* Email field */}
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
+                    Email Address{" "}
+                    <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errors.email) setErrors((p) => ({ ...p, email: "" }));
+                    }}
+                    placeholder="johndoe@example.com"
+                    disabled={loading}
+                    autoComplete="email"
+                    className={[
+                      "w-full px-3.5 py-2.5 rounded-lg text-sm outline-none transition-all",
+                      "bg-card text-foreground placeholder:text-muted-foreground",
+                      "border focus:ring-2 focus:ring-accent focus:border-primary",
+                      errors.email
+                        ? "border-destructive focus:ring-destructive/20"
+                        : "border-border",
+                      loading ? "opacity-60 cursor-not-allowed" : "",
+                    ].join(" ")}
+                  />
+                  {errors.email && (
+                    <p className="mt-1.5 text-xs text-destructive">{errors.email}</p>
+                  )}
+                </div>
+
+                {/* Application Number field */}
+                <div>
+                  <label htmlFor="appNumber" className="block text-sm font-medium text-foreground mb-1.5">
+                    Application Number{" "}
+                    <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    id="appNumber"
+                    type="text"
+                    value={applicationNumber}
+                    onChange={(e) => {
+                      setApplicationNumber(e.target.value);
+                      if (errors.applicationNumber)
+                        setErrors((p) => ({ ...p, applicationNumber: "" }));
+                    }}
+                    placeholder="e.g., APP2025001234"
+                    disabled={loading}
+                    autoComplete="off"
+                    className={[
+                      "w-full px-3.5 py-2.5 rounded-lg text-sm outline-none transition-all font-mono",
+                      "bg-card text-foreground placeholder:text-muted-foreground",
+                      "border focus:ring-2 focus:ring-accent focus:border-primary",
+                      errors.applicationNumber
+                        ? "border-destructive focus:ring-destructive/20"
+                        : "border-border",
+                      loading ? "opacity-60 cursor-not-allowed" : "",
+                    ].join(" ")}
+                  />
+                  {errors.applicationNumber && (
+                    <p className="mt-1.5 text-xs text-destructive">{errors.applicationNumber}</p>
+                  )}
+                </div>
+
+                {/* Submit button */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 rounded-lg font-semibold text-sm text-primary-foreground bg-primary hover:bg-secondary transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                      </svg>
+                      Verifying...
+                    </>
+                  ) : (
+                    "Verify Admission Status"
+                  )}
+                </button>
+              </form>
+
+              {/* ── Important Information box ── */}
+              <div className="mt-5 rounded-lg bg-accent border border-secondary/20 px-4 py-3.5 flex items-start gap-3">
+                {/* Info icon circle */}
+                <div className="w-5 h-5 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10A8 8 0 110 10a8 8 0 0118 0zM9 9a1 1 0 012 0v4a1 1 0 01-2 0V9zm1-4a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-accent-foreground mb-0.5">
+                    Important Information
+                  </p>
+                  <p className="text-sm text-accent-foreground/80 leading-relaxed">
+                    If you have been admitted, your admission record has been created by the university
+                    admin. Please enter the email and application number you used during your application
+                    process.
+                  </p>
+                </div>
               </div>
-            )}
 
-            {/* ── Form ── */}
-            <form onSubmit={handleSubmit} noValidate className="space-y-5">
-              <Field
-                id="email"
-                label="Email Address"
-                type="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (errors.email) setErrors((prev) => ({ ...prev, email: "" }));
-                }}
-                placeholder="e.g. john.doe@example.com"
-                error={errors.email}
-              />
-
-              <Field
-                id="applicationNumber"
-                label="Application Number"
-                value={applicationNumber}
-                onChange={(e) => {
-                  setApplicationNumber(e.target.value);
-                  if (errors.applicationNumber)
-                    setErrors((prev) => ({ ...prev, applicationNumber: "" }));
-                }}
-                placeholder="e.g. APP2025001"
-                error={errors.applicationNumber}
-                mono
-              />
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full mt-2 py-3.5 rounded-lg font-semibold text-sm tracking-wide transition-all flex items-center justify-center gap-2 bg-primary text-primary-foreground hover:bg-secondary disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-primary/30"
-              >
-                {loading ? (
-                  <>
-                    <svg
-                      className="animate-spin h-4 w-4"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                    </svg>
-                    Verifying...
-                  </>
-                ) : (
-                  "Verify Admission Status"
-                )}
-              </button>
-            </form>
-
-            {/* Footer note */}
-            <p className="text-center text-xs text-muted-foreground mt-6">
-              Having trouble?{" "}
-              <a
-                href="mailto:admissions@university.edu"
-                className="underline hover:text-foreground transition-colors"
-              >
-                Contact the Admissions Office
-              </a>
-            </p>
+            </div>
           </div>
-
-          {/* Bottom tagline */}
-          <p
-            className="text-center text-primary-foreground/30 text-xs mt-6 tracking-wider uppercase"
-            style={{ fontFamily: "Georgia, serif" }}
-          >
-            Securing futures through education
-          </p>
         </div>
       </main>
     </div>
