@@ -10,6 +10,8 @@ import VerifyAdmission from "../pages/student/VerifyAdmission";
 import AdmissionSuccess from "../pages/student/AdmissionSuccess";
 
 import AdminLogin from "../pages/admin/AdminLogin";
+import EmailLogs from "../pages/admin/EmailLogs";
+import AdminSignup from "../pages/admin/AdminSignup";
 import Dashboard from "../pages/admin/Dashboard";
 import Students from "../pages/admin/Students";
 import StudentDetails from "../pages/admin/StudentDetails";
@@ -50,11 +52,6 @@ const router = createBrowserRouter([
       },
 
       {
-        path: "login",
-        element: <AdminLogin />,
-      },
-
-      {
         path: "dashboard",
         element: <Dashboard />,
       },
@@ -62,6 +59,11 @@ const router = createBrowserRouter([
       {
         path: "students",
         element: <Students />,
+      },
+
+      {
+        path: "email-logs",
+        element: <EmailLogs />,
       },
 
       {
@@ -74,6 +76,16 @@ const router = createBrowserRouter([
         element: <AdmissionLetters />,
       },
     ],
+  },
+
+  {
+    path: "login",
+    element: <AdminLogin />,
+  },
+
+  {
+    path: "signup",
+    element: <AdminSignup />,
   },
 
   {

@@ -262,7 +262,7 @@ export default function Home() {
             </div>
             <p className="text-xs text-primary/50 leading-relaxed">
               Caleb University,<br />
-              P.M.B. 1234, Lagos, Nigeria.
+              Ikorodu, Ibadan-Ijebu Ode Rd, Imota, Lagos, Nigeria.
             </p>
           </div>
 
