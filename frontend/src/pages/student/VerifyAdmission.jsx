@@ -2,20 +2,16 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { verifyStudent } from "../../services/studentApi";
 import {
-  ArrowLeft
+  ArrowLeft,
+  Shield,
+  Info,
+  AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import culLogo from "../../assets/images/cul_logo_rect.png";
 
 
-/**
- * VerifyAdmission Page
- * ─────────────────────
- * Matches the provided UI design exactly:
- * - White top header with university branding
- * - "← Back to Home" navigation link
- * - Centered card with a navy banner, form fields, submit button,
- *   an info notice, and a demo credentials box.
- */
+
 export default function VerifyAdmission() {
   const navigate = useNavigate();
 
@@ -77,10 +73,10 @@ export default function VerifyAdmission() {
     <div className="min-h-screen flex flex-col bg-background">
 
       {/* ── Top Header ── */}
-      <header className="bg-card border-b border-border px-6 py-3 flex items-center gap-3">
+      <header className="bg-card border-b border-border px-4 sm:px-6 py-3 flex items-center gap-3">
         {/* Shield logo mark */}
-        <div className="w-40 h-20 flex items-center justify-center flex-shrink-0">
-          <img className = "w-full h-full" src= {culLogo}/>
+        <div className="h-14 sm:h-20 w-auto flex items-center justify-center flex-shrink-0">
+          <img className="h-full w-auto object-contain" src={culLogo} alt="Caleb University Logo" />
         </div>
 
         {/* University name + subtitle */}
@@ -114,13 +110,7 @@ export default function VerifyAdmission() {
             <div className="bg-primary px-6 py-5 flex items-center gap-4">
               {/* Shield icon box */}
               <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-white/15 border border-white/25">
-                <svg className="w-5 h-5 text-primary-foreground" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 1.944l7 2.917v5.278c0 3.668-2.974 7.088-7 8.417C3.974 17.227 1 13.807 1 10.139V4.861l9-2.917zm0 2.112L3 6.25v3.889c0 2.84 2.338 5.614 7 6.806 4.662-1.192 7-3.966 7-6.806V6.25L10 4.056z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <Shield className="w-5 h-5 text-primary-foreground" />
               </div>
               <div>
                 <h1 className="text-primary-foreground font-bold text-lg leading-tight">
@@ -138,7 +128,7 @@ export default function VerifyAdmission() {
               {/* Server error */}
               {serverError && (
                 <div className="mb-5 flex items-start gap-2.5 px-4 py-3 rounded-lg text-sm bg-destructive/8 border border-destructive/25 text-destructive">
-                  <span className="mt-0.5 leading-none">⚠</span>
+                  <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <span>{serverError}</span>
                 </div>
               )}
@@ -218,10 +208,7 @@ export default function VerifyAdmission() {
                 >
                   {loading ? (
                     <>
-                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                      </svg>
+                      <Loader2 className="animate-spin h-4 w-4" />
                       Verifying...
                     </>
                   ) : (
@@ -234,9 +221,7 @@ export default function VerifyAdmission() {
               <div className="mt-5 rounded-lg bg-accent border border-secondary/20 px-4 py-3.5 flex items-start gap-3">
                 {/* Info icon circle */}
                 <div className="w-5 h-5 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10A8 8 0 110 10a8 8 0 0118 0zM9 9a1 1 0 012 0v4a1 1 0 01-2 0V9zm1-4a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
-                  </svg>
+                  <Info className="w-3 h-3 text-white" />
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-accent-foreground mb-0.5">

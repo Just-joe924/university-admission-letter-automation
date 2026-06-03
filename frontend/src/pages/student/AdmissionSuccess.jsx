@@ -10,16 +10,6 @@ import {
 } from "lucide-react";
 import culLogo from "../../assets/images/cul_logo_rect.png";
 
-/**
- * AdmissionSuccess Page
- * ──────────────────────
- * Matches the provided UI design exactly:
- * - White header with university branding
- * - Green "Verification Successful!" banner
- * - Admission Details card with 2-column label/value grid
- * - "Next Steps" action buttons section
- * - "← Return to Home" link
- */
 export default function AdmissionSuccess() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -40,7 +30,7 @@ export default function AdmissionSuccess() {
     <div>
       <p className="text-xs text-muted-foreground mb-1">{label}</p>
       {children ?? (
-        <p className={["text-sm font-medium text-foreground", mono ? "font-mono" : ""].join(" ")}>
+        <p className={["text-sm font-medium text-foreground break-words", mono ? "font-mono" : ""].join(" ")}>
           {value || "—"}
         </p>
       )}
@@ -63,9 +53,9 @@ export default function AdmissionSuccess() {
     <div className="min-h-screen flex flex-col bg-background">
 
       {/* ── Top Header (same as VerifyAdmission) ── */}
-      <header className="bg-card border-b border-border px-6 py-3 flex items-center gap-3">
-        <div className="w-40 h-20 flex items-center justify-center flex-shrink-0">
-            <img className = "w-full h-full" src= {culLogo}/>
+      <header className="bg-card border-b border-border px-4 sm:px-6 py-3 flex items-center gap-3">
+        <div className="h-14 sm:h-20 w-auto flex items-center justify-center flex-shrink-0">
+            <img className="h-full w-auto object-contain" src={culLogo} alt="Caleb University Logo" />
         </div>
         <div>
           <p className="font-bold text-sm text-foreground leading-tight">
@@ -110,7 +100,7 @@ export default function AdmissionSuccess() {
             <div className="">
 
               {/* Row 1: Full Name | Mode of Entry */}
-              <div className="grid grid-cols-2 px-5 py-1 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 px-5 py-1 gap-4">
                 <DetailCell label="Full Name" value={student.full_name} />
                 <DetailCell label="Mode of Entry">
                   {/* Pill badge */}
@@ -121,19 +111,19 @@ export default function AdmissionSuccess() {
               </div>
 
               {/* Row 2: Email Address | Application Number */}
-              <div className="grid grid-cols-2 px-5 py-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 px-5 py-2 gap-4">
                 <DetailCell label="Email Address" value={student.email} />
                 <DetailCell label="Application Number" value={student.application_number} mono />
               </div>
 
               {/* Row 3: Department | Admission Number */}
-              <div className="grid grid-cols-2 px-5 py-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 px-5 py-2 gap-4">
                 <DetailCell label="Department" value={student.department} />
                 <DetailCell label="Admission Number" value={student.admission_number} mono />
               </div>
 
               {/* Row 4: Course of Study | Academic Session */}
-              <div className="grid grid-cols-2 px-5 pt-2 pb-6 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 px-5 pt-2 pb-6 gap-4">
                 <DetailCell label="Course of Study" value={student.course} />
                 <DetailCell label="Academic Session" value={student.session} />
               </div>
