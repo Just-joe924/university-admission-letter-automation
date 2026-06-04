@@ -21,6 +21,8 @@ export default function AuthProvider({ children }) {
     setToken(accessToken);
 
     if (data.user) {
+      // data.user.email is the address the admin authenticated with.
+      localStorage.setItem("adminEmail", data.user.email || "");
       setAdmin(data.user);
     }
 
@@ -34,6 +36,7 @@ export default function AuthProvider({ children }) {
       console.error("Logout error:", error);
     } finally {
       localStorage.removeItem("adminToken");
+      localStorage.removeItem("adminEmail");
       setToken(null);
       setAdmin(null);
     }
@@ -48,7 +51,9 @@ export default function AuthProvider({ children }) {
 
       try {
         const data = await getAdminProfile();
-        setAdmin(data.admin);
+        // Keep the email consistent with the account that logged in.
+        const authEmail = localStorage.getItem("adminEmail");
+        setAdmin({ ...data.admin, email: authEmail || data.admin?.email });
       } catch (error) {
         localStorage.removeItem("adminToken");
         setToken(null);

@@ -15,12 +15,12 @@ export default function ModeOfEntryChart({ data = [] }) {
   }));
 
   return (
-    <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-8 h-[430px]">
-      <h2 className="text-2xl font-bold text-primary mb-6">
+    <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-5 h-[340px]">
+      <h2 className="text-lg font-bold text-primary mb-4">
         Mode of Entry Distribution
       </h2>
 
-      <ResponsiveContainer width="100%" height={310}>
+      <ResponsiveContainer width="100%" height={250}>
         <PieChart>
           <Pie
             data={chartData}
@@ -28,7 +28,7 @@ export default function ModeOfEntryChart({ data = [] }) {
             nameKey="name"
             cx="50%"
             cy="50%"
-            outerRadius={120}
+            outerRadius={90}
             label={({ name, percent }) =>
               `${name}: ${(percent * 100).toFixed(0)}%`
             }

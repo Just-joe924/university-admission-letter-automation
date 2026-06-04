@@ -15,12 +15,12 @@ export default function DepartmentChart({ data = [] }) {
   }));
 
   return (
-    <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-8 h-[430px]">
-      <h2 className="text-2xl font-bold text-primary mb-8">
+    <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-5 h-[340px]">
+      <h2 className="text-lg font-bold text-primary mb-4">
         Students by Department
       </h2>
 
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={250}>
         <BarChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis

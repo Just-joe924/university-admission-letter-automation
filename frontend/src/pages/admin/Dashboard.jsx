@@ -51,7 +51,7 @@ export default function Dashboard() {
   }, []);
 
   if (loading) {
-    return <p className="text-lg text-slate-600">Loading dashboard...</p>;
+    return <p className="text-sm text-slate-600">Loading dashboard...</p>;
   }
 
   const statCards = [
@@ -83,69 +83,69 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className="flex items-start justify-between mb-12">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
         <div>
-          <h1 className="text-4xl font-bold text-primary mb-4">
+          <h1 className="text-xl sm:text-2xl font-bold text-primary mb-1">
             Dashboard Overview
           </h1>
-          <p className="text-xl text-slate-600">
+          <p className="text-sm text-slate-600">
             Welcome back! Here's what's happening with your admissions today.
           </p>
         </div>
 
-        <button className="h-16 px-8 rounded-2xl bg-primary text-white text-xl font-semibold flex items-center gap-3 hover:bg-secondary transition">
-          <Plus className="w-7 h-7" />
+        <button className="h-11 px-5 rounded-xl bg-primary text-white text-sm font-semibold flex items-center justify-center gap-2 hover:bg-secondary transition shrink-0 w-full sm:w-auto">
+          <Plus className="w-5 h-5" />
           Add Student
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
         {statCards.map((card) => (
           <StatCard key={card.title} {...card} />
         ))}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-12">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-8">
         <DepartmentChart data={departmentStats} />
         <ModeOfEntryChart data={modeStats} />
       </div>
 
       <div className="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden">
-        <div className="px-8 py-7 border-b border-slate-200 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-primary">Recent Admissions</h2>
+        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-primary">Recent Admissions</h2>
 
-          <button className="text-primary text-lg font-medium flex items-center gap-2 hover:underline">
+          <button className="text-primary text-sm font-medium flex items-center gap-1.5 hover:underline">
             View All
-            <ArrowRight className="w-5 h-5" />
+            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="p-8 space-y-6">
+        <div className="p-5 space-y-3">
           {recentStudents.map((student) => (
             <div
               key={student.id}
-              className="border border-slate-100 rounded-2xl px-6 py-5 flex items-center justify-between"
+              className="border border-slate-100 rounded-xl px-4 py-3 flex items-center justify-between gap-3"
             >
-              <div className="flex items-center gap-6">
-                <div className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center text-2xl">
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="w-11 h-11 rounded-full bg-primary text-white flex items-center justify-center text-base shrink-0">
                   {student.full_name?.[0] || "S"}
                 </div>
 
-                <div>
-                  <h3 className="text-xl font-semibold text-primary">
+                <div className="min-w-0">
+                  <h3 className="text-base font-semibold text-primary truncate">
                     {student.full_name}
                   </h3>
-                  <p className="text-lg text-slate-600">
+                  <p className="text-sm text-slate-600 truncate">
                     {student.department} - {student.mode_of_entry}
                   </p>
                 </div>
               </div>
 
-              <div className="text-right">
-                <p className="text-lg text-slate-700">
+              <div className="text-right shrink-0">
+                <p className="text-sm text-slate-700">
                   {student.admission_number || "Pending"}
                 </p>
-                <span className="inline-block mt-2 px-5 py-1 rounded-full bg-green-100 text-green-700 text-sm">
+                <span className="inline-block mt-1.5 px-3 py-0.5 rounded-full bg-green-100 text-green-700 text-xs">
                   Generated
                 </span>
               </div>
@@ -153,7 +153,7 @@ export default function Dashboard() {
           ))}
 
           {recentStudents.length === 0 && (
-            <p className="text-slate-500">No recent students found.</p>
+            <p className="text-sm text-slate-500">No recent students found.</p>
           )}
         </div>
       </div>

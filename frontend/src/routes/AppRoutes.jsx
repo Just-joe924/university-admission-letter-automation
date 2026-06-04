@@ -48,7 +48,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/admin/login" replace />,
+        element: <Navigate to="/login" replace />,
       },
 
       {

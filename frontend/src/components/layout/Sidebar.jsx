@@ -1,15 +1,16 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  GraduationCap,
   LayoutDashboard,
   Users,
   FileText,
   Mail,
   LogOut,
+  X,
 } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
+import culLogo from "../../assets/images/cul_logo_rect.png";
 
-export default function Sidebar() {
+export default function Sidebar({ open = false, onClose = () => {} }) {
   const navigate = useNavigate();
   const { logout, admin } = useAuth();
 
@@ -42,66 +43,98 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-72 bg-white border-r border-slate-200 flex flex-col">
-      <div className="px-6 py-6 flex items-center gap-4 border-b border-slate-200">
-        <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
-          <GraduationCap className="w-7 h-7 text-white" />
-        </div>
+    <>
+      {/* Mobile overlay */}
+      <div
+        onClick={onClose}
+        className={[
+          "fixed inset-0 z-40 bg-black/40 lg:hidden transition-opacity",
+          open ? "opacity-100" : "pointer-events-none opacity-0",
+        ].join(" ")}
+      />
 
-        <div>
-          <h1 className="text-xl font-bold text-[#06163d]">FUT Admin</h1>
-          <p className="text-sm text-slate-500">Admission Portal</p>
-        </div>
-      </div>
-
-      <nav className="flex-1 px-4 py-6 space-y-3">
-        {links.map((link) => {
-          const Icon = link.icon;
-
-          return (
-            <NavLink
-              key={link.path}
-              to={link.path}
-              className={({ isActive }) =>
-                [
-                  "flex items-center gap-4 px-5 py-4 rounded-2xl text-lg font-medium transition-all",
-                  isActive
-                    ? "bg-primary text-white shadow-lg"
-                    : "text-slate-700 hover:bg-slate-100",
-                ].join(" ")
-              }
-            >
-              <Icon className="w-6 h-6" />
-              {link.label}
-            </NavLink>
-          );
-        })}
-      </nav>
-
-      <div className="px-4 py-6 border-t border-slate-200">
-        <div className="bg-[#dfe8ff] rounded-2xl px-5 py-5 flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center text-xl font-semibold">
-            {admin?.full_name?.[0] || admin?.email?.[0] || "A"}
+      <aside
+        className={[
+          "fixed left-0 top-0 z-50 h-screen w-60 bg-white border-r border-slate-200 flex flex-col",
+          "transform transition-transform duration-300 lg:translate-x-0",
+          open ? "translate-x-0" : "-translate-x-full",
+        ].join(" ")}
+      >
+        <div className="px-4 py-4 flex items-center gap-3 border-b border-slate-200">
+          <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+            <img
+              src={culLogo}
+              alt="CUL logo"
+              className="w-full h-full object-contain"
+            />
           </div>
 
-          <div>
-            <p className="font-semibold text-[#06163d]">
-              {admin?.full_name || "Admin User"}
-            </p>
-            <p className="text-sm text-slate-600">
-              {admin?.email || "admin@university.edu"}
-            </p>
+          <div className="min-w-0">
+            <h1 className="text-base font-bold text-[#06163d] truncate">
+              CUL Admin
+            </h1>
+            <p className="text-xs text-slate-500 truncate">Admission Portal</p>
           </div>
+
+          <button
+            onClick={onClose}
+            className="ml-auto lg:hidden text-slate-500 hover:text-slate-800"
+            aria-label="Close menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-3 text-red-600 font-semibold text-lg hover:bg-red-50 rounded-xl py-3 transition"
-        >
-          <LogOut className="w-6 h-6" />
-          Logout
-        </button>
-      </div>
-    </aside>
+        <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
+          {links.map((link) => {
+            const Icon = link.icon;
+
+            return (
+              <NavLink
+                key={link.path}
+                to={link.path}
+                onClick={onClose}
+                className={({ isActive }) =>
+                  [
+                    "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
+                    isActive
+                      ? "bg-primary text-white shadow"
+                      : "text-slate-700 hover:bg-slate-100",
+                  ].join(" ")
+                }
+              >
+                <Icon className="w-5 h-5" />
+                {link.label}
+              </NavLink>
+            );
+          })}
+        </nav>
+
+        <div className="mt-auto px-3 py-4 border-t border-slate-200">
+          <div className="bg-[#dfe8ff] rounded-xl px-3 py-3 flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold shrink-0">
+              {admin?.full_name?.[0] || admin?.email?.[0] || "A"}
+            </div>
+
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-[#06163d] truncate">
+                {admin?.full_name || "Admin User"}
+              </p>
+              <p className="text-xs text-slate-600 truncate">
+                {admin?.email || "—"}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 text-red-600 font-semibold text-sm hover:bg-red-50 rounded-lg py-2.5 transition"
+          >
+            <LogOut className="w-5 h-5" />
+            Logout
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }

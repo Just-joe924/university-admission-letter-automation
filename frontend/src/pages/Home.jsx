@@ -109,7 +109,7 @@ export default function Home() {
 
         {/* Admin Login button */}
         <button
-          onClick={() => navigate("/admin/login")}
+          onClick={() => navigate("/login")}
           className="flex-shrink-0 text-sm font-medium px-3 sm:px-4 py-1.5 rounded-lg border border-border text-foreground hover:bg-muted transition-colors"
         >
           Admin Login
@@ -143,7 +143,7 @@ export default function Home() {
                 Verify Admission
               </button>
               <button
-                onClick={() => navigate("/admin/login")}
+                onClick={() => navigate("/login")}
                 className="px-5 py-2.5 rounded-lg text-sm font-semibold border border-white/50 text-primary-foreground hover:bg-white/10 transition-colors"
               >
                 Admin Portal
