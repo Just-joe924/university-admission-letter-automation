@@ -11,7 +11,7 @@ export const getModeOfEntryStats = async () => {
 };
 
 export const getStudentsByDepartment = async () => {
-  const response = await api.get("/dashboard/students-by-departments");
+  const response = await api.get("/dashboard/students-by-department");
   return response.data;
 };
 
