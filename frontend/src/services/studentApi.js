@@ -29,3 +29,4 @@ export const verifyStudent = async (payload) => {
   const response = await api.post("/students/verify", payload);
   return response.data;
 };
+

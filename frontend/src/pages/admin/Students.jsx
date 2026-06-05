@@ -1,14 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Search } from "lucide-react";
 import StudentsTable from "../../components/tables/StudentTable";
-import { getAllStudents, deleteStudent } from "../../services/studentApi";
+import StudentDetailsModal from "../../components/modals/StudentDetailsModals";
+import { deleteStudent, getAllStudents } from "../../services/studentApi";
 
 export default function Students() {
   const [students, setStudents] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("");
   const [mode, setMode] = useState("");
   const [status, setStatus] = useState("");
+
   const [loading, setLoading] = useState(true);
 
   const loadStudents = async () => {
@@ -26,16 +30,21 @@ export default function Students() {
     loadStudents();
   }, []);
 
-  const departments = [...new Set(students.map((s) => s.department).filter(Boolean))];
+  const departments = [
+    ...new Set(students.map((student) => student.department).filter(Boolean)),
+  ];
 
   const filteredStudents = useMemo(() => {
     return students.filter((student) => {
+      const searchValue = search.toLowerCase();
+
       const matchesSearch =
-        student.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-        student.email?.toLowerCase().includes(search.toLowerCase()) ||
-        student.admission_number?.toLowerCase().includes(search.toLowerCase());
+        student.full_name?.toLowerCase().includes(searchValue) ||
+        student.email?.toLowerCase().includes(searchValue) ||
+        student.admission_number?.toLowerCase().includes(searchValue);
 
       const matchesDepartment = !department || student.department === department;
+
       const matchesMode = !mode || student.mode_of_entry === mode;
 
       const matchesStatus =
@@ -51,8 +60,13 @@ export default function Students() {
     const confirmDelete = window.confirm("Delete this student record?");
     if (!confirmDelete) return;
 
-    await deleteStudent(id);
-    loadStudents();
+    try {
+      await deleteStudent(id);
+      await loadStudents();
+    } catch (error) {
+      console.error("Delete student error:", error);
+      alert("Failed to delete student.");
+    }
   };
 
   if (loading) {
@@ -77,8 +91,8 @@ export default function Students() {
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-8 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
           <div className="relative">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400" />
             <input
@@ -123,10 +137,19 @@ export default function Students() {
           </select>
         </div>
 
-        <div className="mt-8">
-          <StudentsTable students={filteredStudents} onDelete={handleDelete} />
-        </div>
+        <StudentsTable
+          students={filteredStudents}
+          onDelete={handleDelete}
+          onView={(student) => setSelectedStudent(student)}
+        />
       </div>
+
+      {selectedStudent && (
+        <StudentDetailsModal
+          student={selectedStudent}
+          onClose={() => setSelectedStudent(null)}
+        />
+      )}
     </div>
   );
 }

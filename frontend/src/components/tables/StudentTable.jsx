@@ -1,7 +1,7 @@
-import { Eye, FileText, Download, Trash2, Pencil } from "lucide-react";
+import { Download, Eye, FileText, Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function StudentsTable({ students, onDelete }) {
+export default function StudentsTable({ students, onDelete, onView }) {
   const navigate = useNavigate();
 
   return (
@@ -34,30 +34,42 @@ export default function StudentsTable({ students, onDelete }) {
                 <td className="py-5 px-4">{student.course}</td>
                 <td className="py-5 px-4">{student.mode_of_entry}</td>
                 <td className="py-5 px-4">{student.admission_number}</td>
+
                 <td className="py-5 px-4">
-                  <span className="px-4 py-1 rounded-full bg-green-100 text-green-700 text-sm">
+                  <span
+                    className={[
+                      "px-4 py-1 rounded-full text-sm",
+                      student.letter_generated
+                        ? "bg-green-100 text-green-700"
+                        : "bg-orange-100 text-orange-700",
+                    ].join(" ")}
+                  >
                     {student.letter_generated ? "Generated" : "Pending"}
                   </span>
                 </td>
+
                 <td className="py-5 px-4">
                   <div className="flex items-center gap-4">
-                    <button onClick={() => navigate(`/admin/students/${student.id}`)}>
+                    <button type="button" onClick={() => onView(student)}>
                       <Eye className="w-5 h-5 text-blue-600" />
                     </button>
 
-                    <button onClick={() => navigate(`/admin/students/${student.id}`)}>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/admin/students/${student.id}`)}
+                    >
                       <Pencil className="w-5 h-5 text-slate-600" />
                     </button>
 
-                    <button>
+                    <button type="button">
                       <FileText className="w-5 h-5 text-green-600" />
                     </button>
 
-                    <button>
+                    <button type="button">
                       <Download className="w-5 h-5 text-purple-600" />
                     </button>
 
-                    <button onClick={() => onDelete(student.id)}>
+                    <button type="button" onClick={() => onDelete(student.id)}>
                       <Trash2 className="w-5 h-5 text-red-600" />
                     </button>
                   </div>
