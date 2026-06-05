@@ -6,11 +6,13 @@ import {
   deleteStudentService,
   verifyStudentService,
 } from "../services/student.service.js";
+import { generateAdmissionNumber } from "../utils/generateAdmissionNumber.js";
 
 import {validateStudentInput} from "../utils/validateStudent.js"
 
 
 export const createStudent = async (req, res) => {
+  const generatedAdmissionNumber = admission_number || (await generateAdmissionNumber());
   const validation = validateStudentInput(req.body);
 
   if (!validation.valid) {
@@ -25,7 +27,7 @@ export const createStudent = async (req, res) => {
     department,
     course,
     mode_of_entry,
-    admission_number,
+    admission_number: generatedAdmissionNumber,
     application_number,
   });
 

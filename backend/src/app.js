@@ -14,7 +14,7 @@ app.use(express.json());
 //Mount routes
 app.use("/api/students", studentRoutes);
 app.use("/api/admission-letters", admissionLetterRoutes);
-app.use("/api/auth/admin", authRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/email-logs", emailRoutes);
 
@@ -39,7 +39,7 @@ app.use((err, req, res, next) => {
         console.error(err.stack);
     }
     res.status(err.status || 500).json({
-        error: err.message || "Internal Server Error",
+        message: err.message || "Internal Server Error",
     });
 });
 
