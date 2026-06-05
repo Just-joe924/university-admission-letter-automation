@@ -5,8 +5,8 @@ export default function StudentsTable({ students, onDelete, onView }) {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-8">
-      <p className="text-lg text-slate-700 mb-8">
+    <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-5">
+      <p className="text-sm text-slate-700 mb-5">
         Showing 1-{students.length} of {students.length} students
       </p>
 
@@ -14,31 +14,31 @@ export default function StudentsTable({ students, onDelete, onView }) {
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-slate-200">
-              <th className="py-4 px-4 text-lg font-bold">Name</th>
-              <th className="py-4 px-4 text-lg font-bold">Email</th>
-              <th className="py-4 px-4 text-lg font-bold">Department</th>
-              <th className="py-4 px-4 text-lg font-bold">Course</th>
-              <th className="py-4 px-4 text-lg font-bold">Mode</th>
-              <th className="py-4 px-4 text-lg font-bold">Admission No.</th>
-              <th className="py-4 px-4 text-lg font-bold">Status</th>
-              <th className="py-4 px-4 text-lg font-bold">Actions</th>
+              <th className="py-3 px-4 text-sm font-semibold">Name</th>
+              <th className="py-3 px-4 text-sm font-semibold">Email</th>
+              <th className="py-3 px-4 text-sm font-semibold">Department</th>
+              <th className="py-3 px-4 text-sm font-semibold">Course</th>
+              <th className="py-3 px-4 text-sm font-semibold">Mode</th>
+              <th className="py-3 px-4 text-sm font-semibold">Admission No.</th>
+              <th className="py-3 px-4 text-sm font-semibold">Status</th>
+              <th className="py-3 px-4 text-sm font-semibold">Actions</th>
             </tr>
           </thead>
 
           <tbody>
             {students.map((student) => (
               <tr key={student.id} className="border-b border-slate-100">
-                <td className="py-5 px-4 text-lg">{student.full_name}</td>
-                <td className="py-5 px-4 text-slate-600">{student.email}</td>
-                <td className="py-5 px-4">{student.department}</td>
-                <td className="py-5 px-4">{student.course}</td>
-                <td className="py-5 px-4">{student.mode_of_entry}</td>
-                <td className="py-5 px-4">{student.admission_number}</td>
+                <td className="py-3 px-4 text-sm whitespace-nowrap">{student.full_name}</td>
+                <td className="py-3 px-4 text-sm text-slate-600">{student.email}</td>
+                <td className="py-3 px-4 text-sm">{student.department}</td>
+                <td className="py-3 px-4 text-sm">{student.course}</td>
+                <td className="py-3 px-4 text-sm">{student.mode_of_entry}</td>
+                <td className="py-3 px-4 text-sm">{student.admission_number}</td>
 
-                <td className="py-5 px-4">
+                <td className="py-3 px-4">
                   <span
                     className={[
-                      "px-4 py-1 rounded-full text-sm",
+                      "px-3 py-0.5 rounded-full text-xs whitespace-nowrap",
                       student.letter_generated
                         ? "bg-green-100 text-green-700"
                         : "bg-orange-100 text-orange-700",
@@ -48,29 +48,29 @@ export default function StudentsTable({ students, onDelete, onView }) {
                   </span>
                 </td>
 
-                <td className="py-5 px-4">
-                  <div className="flex items-center gap-4">
+                <td className="py-3 px-4">
+                  <div className="flex items-center gap-3">
                     <button type="button" onClick={() => onView(student)}>
-                      <Eye className="w-5 h-5 text-blue-600" />
+                      <Eye className="w-4 h-4 text-blue-600" />
                     </button>
 
                     <button
                       type="button"
                       onClick={() => navigate(`/admin/students/${student.id}`)}
                     >
-                      <Pencil className="w-5 h-5 text-slate-600" />
+                      <Pencil className="w-4 h-4 text-slate-600" />
                     </button>
 
                     <button type="button">
-                      <FileText className="w-5 h-5 text-green-600" />
+                      <FileText className="w-4 h-4 text-green-600" />
                     </button>
 
                     <button type="button">
-                      <Download className="w-5 h-5 text-purple-600" />
+                      <Download className="w-4 h-4 text-purple-600" />
                     </button>
 
                     <button type="button" onClick={() => onDelete(student.id)}>
-                      <Trash2 className="w-5 h-5 text-red-600" />
+                      <Trash2 className="w-4 h-4 text-red-600" />
                     </button>
                   </div>
                 </td>
@@ -80,7 +80,7 @@ export default function StudentsTable({ students, onDelete, onView }) {
         </table>
 
         {students.length === 0 && (
-          <p className="text-center py-10 text-slate-500">No students found.</p>
+          <p className="text-center py-8 text-sm text-slate-500">No students found.</p>
         )}
       </div>
     </div>

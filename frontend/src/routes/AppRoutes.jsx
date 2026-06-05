@@ -9,6 +9,7 @@ import Home from "../pages/Home";
 import VerifyAdmission from "../pages/student/VerifyAdmission";
 import AdmissionSuccess from "../pages/student/AdmissionSuccess";
 
+import AddStudent from "../pages/admin/AddStudents";
 import AdminLogin from "../pages/admin/AdminLogin";
 import EmailLogs from "../pages/admin/EmailLogs";
 import AdminSignup from "../pages/admin/AdminSignup";
@@ -64,6 +65,11 @@ const router = createBrowserRouter([
       {
         path: "email-logs",
         element: <EmailLogs />,
+      },
+
+      {
+        path: "students/add",
+        element: <AddStudent />,
       },
 
       {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FileText,
   GraduationCap,
@@ -19,6 +20,7 @@ import {
 } from "../../services/dashboardApi";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [modeStats, setModeStats] = useState([]);
   const [departmentStats, setDepartmentStats] = useState([]);
@@ -93,7 +95,10 @@ export default function Dashboard() {
           </p>
         </div>
 
-        <button className="h-11 px-5 rounded-xl bg-primary text-white text-sm font-semibold flex items-center justify-center gap-2 hover:bg-secondary transition shrink-0 w-full sm:w-auto">
+        <button
+          onClick={() => navigate("/admin/students/add")}
+          className="h-11 px-5 rounded-xl bg-primary text-white text-sm font-semibold flex items-center justify-center gap-2 hover:bg-secondary transition shrink-0 w-full sm:w-auto"
+        >
           <Plus className="w-5 h-5" />
           Add Student
         </button>

@@ -72,115 +72,115 @@ export default function StudentDetails() {
   };
 
   if (loading) {
-    return <p>Loading...</p>;
+    return <p className="text-sm text-slate-600">Loading...</p>;
   }
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-10">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
-          <h1 className="text-4xl font-bold text-primary">
+          <h1 className="text-xl sm:text-2xl font-bold text-primary">
             Student Details
           </h1>
 
-          <p className="text-slate-600 mt-2">
+          <p className="text-sm text-slate-600 mt-1">
             View and manage student information
           </p>
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-3">
           <button
             onClick={handleGenerateLetter}
-            className="px-6 h-12 rounded-xl bg-green-600 text-white flex items-center gap-2"
+            className="px-4 h-10 rounded-xl bg-green-600 text-white text-sm font-semibold flex items-center gap-2"
           >
-            <FileText size={18} />
+            <FileText size={16} />
             Generate Letter
           </button>
 
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-6 h-12 rounded-xl bg-primary text-white flex items-center gap-2"
+            className="px-4 h-10 rounded-xl bg-primary text-white text-sm font-semibold flex items-center gap-2"
           >
-            <Save size={18} />
+            <Save size={16} />
             {saving ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-md p-8">
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center">
-            <User />
+      <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-5">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shrink-0">
+            <User className="w-6 h-6" />
           </div>
 
-          <div>
-            <h2 className="text-2xl font-semibold">
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold truncate">
               {student.full_name}
             </h2>
 
-            <p className="text-slate-500 flex items-center gap-2">
-              <Mail size={16} />
+            <p className="text-sm text-slate-500 flex items-center gap-2 truncate">
+              <Mail size={14} />
               {student.email}
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
             name="full_name"
             value={student.full_name || ""}
             onChange={handleChange}
-            className="border rounded-xl p-4"
+            className="border border-slate-300 rounded-xl h-11 px-4 text-sm outline-none focus:border-primary"
           />
 
           <input
             name="email"
             value={student.email || ""}
             onChange={handleChange}
-            className="border rounded-xl p-4"
+            className="border border-slate-300 rounded-xl h-11 px-4 text-sm outline-none focus:border-primary"
           />
 
           <input
             name="department"
             value={student.department || ""}
             onChange={handleChange}
-            className="border rounded-xl p-4"
+            className="border border-slate-300 rounded-xl h-11 px-4 text-sm outline-none focus:border-primary"
           />
 
           <input
             name="course"
             value={student.course || ""}
             onChange={handleChange}
-            className="border rounded-xl p-4"
+            className="border border-slate-300 rounded-xl h-11 px-4 text-sm outline-none focus:border-primary"
           />
 
           <input
             name="mode_of_entry"
             value={student.mode_of_entry || ""}
             onChange={handleChange}
-            className="border rounded-xl p-4"
+            className="border border-slate-300 rounded-xl h-11 px-4 text-sm outline-none focus:border-primary"
           />
 
           <input
             name="admission_number"
             value={student.admission_number || ""}
             onChange={handleChange}
-            className="border rounded-xl p-4"
+            className="border border-slate-300 rounded-xl h-11 px-4 text-sm outline-none focus:border-primary"
           />
 
           <input
             name="application_number"
             value={student.application_number || ""}
             onChange={handleChange}
-            className="border rounded-xl p-4"
+            className="border border-slate-300 rounded-xl h-11 px-4 text-sm outline-none focus:border-primary"
           />
 
           <input
             name="session"
             value={student.session || ""}
             onChange={handleChange}
-            className="border rounded-xl p-4"
+            className="border border-slate-300 rounded-xl h-11 px-4 text-sm outline-none focus:border-primary"
           />
         </div>
       </div>
