@@ -4,6 +4,10 @@ import { ArrowLeft, Download, Loader2, Printer } from "lucide-react";
 import culLogo from "../../assets/images/cul_logo_rect.png";
 import { downloadAdmissionLetterPdf } from "../../services/admissionLetterApi";
 
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api"
+).replace(/\/+$/, "");
+
 const formatDate = (date = new Date()) =>
   date.toLocaleDateString("en-US", {
     year: "numeric",
@@ -52,7 +56,15 @@ export default function ViewAdmissionLetter() {
     }
   };
 
-  const handlePrint = () => window.print();
+  // Open the server-generated PDF inline in a new tab; the device's native PDF
+  // viewer provides print/share. (window.print() is unreliable on mobile.)
+  const handlePrint = () => {
+    window.open(
+      `${API_BASE_URL}/admission-letters/download/${student.id}?inline=1`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
 
   const DetailRow = ({ label, value }) => (
     <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-1 py-1">
@@ -76,23 +88,21 @@ export default function ViewAdmissionLetter() {
 
           {/* Letter */}
           <article className="bg-white rounded-2xl border border-slate-200 shadow-md p-6 sm:p-10 print:shadow-none print:border-0 print:rounded-none print:p-0">
-            {/* University header */}
-            <header className="flex items-start gap-4">
+            {/* University header — logo stacked above the name */}
+            <header>
               <img
                 src={culLogo}
                 alt="Caleb University logo"
-                className="h-20 print:h-16 w-auto object-contain shrink-0"
+                className="h-20 print:h-16 w-auto object-contain"
               />
-              <div className="min-w-0">
-                <h1 className="text-2xl font-bold text-slate-900 leading-tight">
-                  Caleb University
-                </h1>
-                <p className="text-sm text-slate-500 leading-snug mt-1">
-                  Office of the Registrar
-                  <br />
-                  Ikorodu, Ibadan-Ijebu Ode Rd, Imota, Lagos State, Nigeria
-                </p>
-              </div>
+              <h1 className="text-2xl font-bold text-slate-900 leading-tight mt-3">
+                Caleb University
+              </h1>
+              <p className="text-sm text-slate-500 leading-snug mt-1">
+                Office of the Registrar
+                <br />
+                Ikorodu, Ibadan-Ijebu Ode Rd, Imota, Lagos State, Nigeria
+              </p>
             </header>
 
             <hr className="h-0.5 bg-[#48a0ff] border-0 my-6 print:my-3" />

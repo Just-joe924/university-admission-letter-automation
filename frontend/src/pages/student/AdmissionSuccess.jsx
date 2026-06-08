@@ -76,10 +76,11 @@ export default function AdmissionSuccess() {
       });
     } catch (error) {
       console.error("Send email error:", error);
+      const data = error.response?.data;
       setFeedback({
         type: "error",
         message:
-          error.response?.data?.message ||
+          [data?.message, data?.detail].filter(Boolean).join(": ") ||
           "Failed to send the admission letter. Please try again.",
       });
     } finally {

@@ -1,14 +1,27 @@
 import nodemailer from "nodemailer";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: Number(process.env.EMAIL_PORT),
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+// Build the transporter lazily so we read env vars at send time (after dotenv /
+// the host has injected them) and can surface a clear config error.
+const buildTransporter = () => {
+  const host = process.env.EMAIL_HOST;
+  const port = Number(process.env.EMAIL_PORT) || 587;
+  const user = process.env.EMAIL_USER;
+  const pass = process.env.EMAIL_PASS;
+
+  if (!host || !user || !pass) {
+    throw new Error(
+      "Email is not configured. Set EMAIL_HOST, EMAIL_PORT, EMAIL_USER and EMAIL_PASS."
+    );
+  }
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    // Port 465 uses implicit TLS (secure: true); 587/25 use STARTTLS (secure: false).
+    secure: port === 465,
+    auth: { user, pass },
+  });
+};
 
 export const sendAdmissionLetterEmailService = async ({
   to,
@@ -16,8 +29,10 @@ export const sendAdmissionLetterEmailService = async ({
   pdfBuffer,
   fileName,
 }) => {
+  const transporter = buildTransporter();
+
   const mailOptions = {
-    from: process.env.EMAIL_FROM,
+    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
     to,
     subject: "Your Admission Letter",
     html: `

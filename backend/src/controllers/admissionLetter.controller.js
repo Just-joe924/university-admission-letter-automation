@@ -122,10 +122,13 @@ export const downloadAdmissionLetter = async (req, res) => {
     try {
         const pdfBuffer = await generateAdmissionLetterPDF(student);
 
+        // `?inline=1` displays the PDF in-browser (used by Print); default downloads.
+        const disposition = req.query.inline ? "inline" : "attachment";
+
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader(
             "Content-Disposition",
-            `attachment; filename="admission-letter-${student.admission_number || student.id}.pdf"`
+            `${disposition}; filename="admission-letter-${student.admission_number || student.id}.pdf"`
         );
 
         return res.send(pdfBuffer);
@@ -181,6 +184,7 @@ export const sendAdmissionLetterToStudent = async (req, res) => {
         console.error("Send admission letter error:", emailError);
         return res.status(500).json({
             message: "Failed to send admission letter email",
+            detail: emailError.message,
         });
     }
 };
