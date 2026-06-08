@@ -39,6 +39,26 @@ export const updateStudentService = async (id, updates) => {
 };
 
 export const deleteStudentService = async (id) => {
+  // Remove dependent records first so foreign-key constraints don't block the
+  // student deletion. (email_logs references admission_letters, so delete it first.)
+  const { error: emailLogsError } = await supabase
+    .from("email_logs")
+    .delete()
+    .eq("student_id", id);
+
+  if (emailLogsError) {
+    return { data: null, error: emailLogsError };
+  }
+
+  const { error: lettersError } = await supabase
+    .from("admission_letters")
+    .delete()
+    .eq("student_id", id);
+
+  if (lettersError) {
+    return { data: null, error: lettersError };
+  }
+
   const { data, error } = await supabase
     .from("students")
     .delete()

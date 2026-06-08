@@ -1,6 +1,6 @@
 import { generateAdmissionLetterPDF } from "../services/pdf.service.js";
 import { uploadAdmissionLetterService } from "../services/storage.service.js";
-import { getStudentByIdService } from "../services/student.service.js";
+import { getStudentByIdService, updateStudentService } from "../services/student.service.js";
 import { 
     createAdmissionLetterService, 
     getAdmissionLetterByStudentIdService,
@@ -65,6 +65,9 @@ export const generateAdmissionLetter = async (req, res) => {
 
     const admissionLetter = data?.[0];
 
+    // Mark the student as having a generated letter so other screens stay in sync.
+    await updateStudentService(student.id, { letter_generated: true });
+
     try{
         await sendAdmissionLetterEmailService({
             to: student.email,
@@ -80,6 +83,8 @@ export const generateAdmissionLetter = async (req, res) => {
             "Your Admission Letter from Caleb University",
             "sent"
         );
+
+        await updateStudentService(student.id, { email_sent: true });
 
     } catch (emailError){
         console.error("Send email error:", emailError);

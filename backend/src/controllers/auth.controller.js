@@ -1,4 +1,4 @@
-import { supabase } from "../config/supabase.js";
+import { supabase, supabaseAuth } from "../config/supabase.js";
 
 export const registerAdmin = async (req, res) => {
   const { full_name, email, password, role } = req.body;
@@ -88,7 +88,9 @@ export const loginAdmin = async (req, res) => {
     });
   }
 
-  const { data, error } = await supabase.auth.signInWithPassword({
+  // Sign in on the dedicated auth client so we don't attach this user's token
+  // to the shared service-role database client.
+  const { data, error } = await supabaseAuth.auth.signInWithPassword({
     email,
     password,
   });
