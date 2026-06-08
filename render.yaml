@@ -1,0 +1,29 @@
+# Render Blueprint for the backend API (Express + Puppeteer).
+# Deploy: Render Dashboard -> New -> Blueprint -> pick this repo.
+# Secrets are marked `sync: false`, so Render will prompt you to enter them.
+services:
+  - type: web
+    name: cul-admission-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: EMAIL_HOST
+        sync: false
+      - key: EMAIL_PORT
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
