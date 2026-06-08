@@ -4,16 +4,16 @@ export const validateStudentInput = ({
   department,
   course,
   mode_of_entry,
-  admission_number,
   application_number,
 }) => {
+  // admission_number is intentionally not required here — it is auto-generated
+  // in the controller when left blank.
   if (
     !full_name ||
     !email ||
     !department ||
     !course ||
     !mode_of_entry ||
-    !admission_number ||
     !application_number
   ) {
     return {
