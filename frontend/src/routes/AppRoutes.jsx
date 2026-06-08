@@ -8,6 +8,7 @@ import Home from "../pages/Home";
 
 import VerifyAdmission from "../pages/student/VerifyAdmission";
 import AdmissionSuccess from "../pages/student/AdmissionSuccess";
+import ViewAdmissionLetter from "../pages/student/ViewAdmissionLetter";
 
 import AddStudent from "../pages/admin/AddStudents";
 import AdminLogin from "../pages/admin/AdminLogin";
@@ -39,6 +40,11 @@ const router = createBrowserRouter([
       {
         path: "success",
         element: <AdmissionSuccess />,
+      },
+
+      {
+        path: "letter",
+        element: <ViewAdmissionLetter />,
       },
     ],
   },

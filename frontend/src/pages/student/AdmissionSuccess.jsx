@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -7,14 +7,23 @@ import {
   Download,
   Mail,
   UserRound,
+  Loader2,
 } from "lucide-react";
 import culLogo from "../../assets/images/cul_logo_rect.png";
+import {
+  downloadAdmissionLetterPdf,
+  sendAdmissionLetterToStudent,
+} from "../../services/admissionLetterApi";
 
 export default function AdmissionSuccess() {
   const location = useLocation();
   const navigate = useNavigate();
 
   const student = location.state?.student;
+
+  const [downloading, setDownloading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [feedback, setFeedback] = useState(null); // { type: "success" | "error", message }
 
   // Redirect if no student data (e.g. direct URL access)
   useEffect(() => {
@@ -24,6 +33,59 @@ export default function AdmissionSuccess() {
   }, [student, navigate]);
 
   if (!student) return null;
+
+  const handleViewLetter = () => {
+    navigate("/letter", { state: { student } });
+  };
+
+  const handleDownload = async () => {
+    setFeedback(null);
+    try {
+      setDownloading(true);
+      const blob = await downloadAdmissionLetterPdf(student.id);
+      const url = window.URL.createObjectURL(
+        new Blob([blob], { type: "application/pdf" })
+      );
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `admission-letter-${student.admission_number || student.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download error:", error);
+      setFeedback({
+        type: "error",
+        message: "Failed to download the admission letter. Please try again.",
+      });
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    setFeedback(null);
+    try {
+      setSending(true);
+      const data = await sendAdmissionLetterToStudent(student.id);
+      setFeedback({
+        type: "success",
+        message:
+          data?.message || `Admission letter sent to ${student.email}.`,
+      });
+    } catch (error) {
+      console.error("Send email error:", error);
+      setFeedback({
+        type: "error",
+        message:
+          error.response?.data?.message ||
+          "Failed to send the admission letter. Please try again.",
+      });
+    } finally {
+      setSending(false);
+    }
+  };
 
   // ── Reusable detail cell ─────────────────────────────────────────────────────
   const DetailCell = ({ label, value, mono = false, children }) => (
@@ -38,10 +100,11 @@ export default function AdmissionSuccess() {
   );
 
   // ── Reusable outlined action button ─────────────────────────────────────────
-  const OutlineButton = ({ onClick, icon, children }) => (
+  const OutlineButton = ({ onClick, icon, children, disabled = false }) => (
     <button
       onClick={onClick}
-      className="w-full py-3 rounded-lg text-sm font-medium text-foreground border border-border hover:bg-muted transition-colors flex items-center justify-center gap-2"
+      disabled={disabled}
+      className="w-full py-3 rounded-lg text-sm font-medium text-foreground border border-border hover:bg-muted transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
     >
       {icon}
       {children}
@@ -146,11 +209,10 @@ export default function AdmissionSuccess() {
 
             <div className="space-y-3">
 
-              {/* View Admission Letter — filled navy (disabled if not generated) */}
+              {/* View Admission Letter — filled navy */}
               <button
-                disabled={!student.letter_generated}
-                title={!student.letter_generated ? "Your admission letter is being prepared." : ""}
-                className="w-full py-3 rounded-lg text-sm font-semibold text-primary-foreground bg-primary hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                onClick={handleViewLetter}
+                className="w-full py-3 rounded-lg text-sm font-semibold text-primary-foreground bg-primary hover:bg-secondary transition-colors flex items-center justify-center gap-2"
               >
                 {/* Document icon */}
                 <FileText className = "w-5 h-5" />
@@ -159,23 +221,47 @@ export default function AdmissionSuccess() {
 
               {/* Download as PDF */}
               <OutlineButton
-                onClick={() => {}}
+                onClick={handleDownload}
+                disabled={downloading}
                 icon={
-                  <Download className = "w-5 h-5"/>
+                  downloading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Download className="w-5 h-5" />
+                  )
                 }
               >
-                Download as PDF
+                {downloading ? "Preparing..." : "Download as PDF"}
               </OutlineButton>
 
               {/* Send to Email */}
               <OutlineButton
-                onClick={() => {}}
+                onClick={handleSendEmail}
+                disabled={sending}
                 icon={
-                  <Mail className = "w-5 h-5"/>
+                  sending ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Mail className="w-5 h-5" />
+                  )
                 }
               >
-                Send to Email
+                {sending ? "Sending..." : "Send to Email"}
               </OutlineButton>
+
+              {/* Action feedback */}
+              {feedback && (
+                <p
+                  className={[
+                    "text-sm text-center",
+                    feedback.type === "success"
+                      ? "text-green-600"
+                      : "text-destructive",
+                  ].join(" ")}
+                >
+                  {feedback.message}
+                </p>
+              )}
 
             </div>
 

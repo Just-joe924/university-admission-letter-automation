@@ -107,10 +107,10 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Admin Login button */}
+        {/* Admin Login button — hidden on mobile (reachable via hero/footer) */}
         <button
           onClick={() => navigate("/login")}
-          className="flex-shrink-0 text-sm font-medium px-3 sm:px-4 py-1.5 rounded-lg border border-border text-foreground hover:bg-muted transition-colors"
+          className="hidden sm:inline-flex flex-shrink-0 text-sm font-medium px-3 sm:px-4 py-1.5 rounded-lg border border-border text-foreground hover:bg-muted transition-colors"
         >
           Admin Login
         </button>
