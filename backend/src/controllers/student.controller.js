@@ -12,7 +12,6 @@ import {validateStudentInput} from "../utils/validateStudent.js"
 
 
 export const createStudent = async (req, res) => {
-  const generatedAdmissionNumber = admission_number || (await generateAdmissionNumber());
   const validation = validateStudentInput(req.body);
 
   if (!validation.valid) {
@@ -20,6 +19,19 @@ export const createStudent = async (req, res) => {
       message: validation.message,
     });
   }
+
+  const {
+    full_name,
+    email,
+    department,
+    course,
+    mode_of_entry,
+    admission_number,
+    application_number,
+  } = req.body;
+
+  const generatedAdmissionNumber =
+    admission_number || (await generateAdmissionNumber());
 
   const { data, error } = await createStudentService({
     full_name,

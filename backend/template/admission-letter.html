@@ -27,6 +27,10 @@
             </div>
         </section>
 
+        <section class="recipient">
+            <p>{{email}}</p>
+        </section>
+
         <section class="body">
             <h2>
                 Letter of Admission
@@ -35,7 +39,7 @@
                 Dear <strong>{{full_name}}</strong>,
             </p>
             <p>
-                Following your application for admission into Caleb University for the 2025/2026 academic session, I am pleased to inform you that you have been offered provisional admission to pursue a degree programme in  <strong>{{course}}</strong> in the <strong>{{department}}</strong> at our esteemed institution.
+                Following your application for admission into Caleb University for the {{academic_session}} academic session, I am pleased to inform you that you have been offered provisional admission to pursue a degree programme in  <strong>{{course}}</strong> in the <strong>{{department}}</strong> at our esteemed institution.
             </p>
 
             <section class="admission-det">
@@ -47,7 +51,7 @@
                 <p>Course of Study: <strong>{{course_of_study}}</strong></p>
                 <p>Department: <strong>{{department}}</strong></p>
                 <p>Mode of entry: <strong>{{mode_of_entry}}</strong></p>
-                <p>Academic Session: <strong>2025/2026</strong></p>
+                <p>Academic Session: <strong>{{academic_session}}</strong></p>
             </section>
 
             <p>
@@ -67,7 +71,6 @@
                 Yours sincerely,
             </p>
             <br>
-            <img src="#" alt="Registrar's Signature" width="150">
             <p>
                 <hr>
                 Dr. Mayo Olumeru
