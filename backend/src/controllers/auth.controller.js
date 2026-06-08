@@ -1,28 +1,81 @@
 import { supabase } from "../config/supabase.js";
 
 export const registerAdmin = async (req, res) => {
-  const { email, password } = req.body;
+  const { full_name, email, password, role } = req.body;
 
-  if (!email || !password) {
+  if (!full_name || !email || !password) {
     return res.status(400).json({
-      message: "Email and password are required",
+      message: "Full name, email, and password are required",
     });
   }
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-  });
-
-  if (error) {
+  if (password.length < 6) {
     return res.status(400).json({
-      message: error.message,
+      message: "Password must be at least 6 characters long",
+    });
+  }
+
+  const allowedRoles = ["admin", "registrar", "staff"];
+  const userRole = (role || "admin").toLowerCase();
+
+  if (!allowedRoles.includes(userRole)) {
+    return res.status(400).json({
+      message: "Invalid role selected",
+    });
+  }
+
+  // Create a confirmed auth user (uses the service role key) so the admin can
+  // sign in immediately without an email-confirmation step.
+  const { data: authData, error: authError } =
+    await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { full_name, role: userRole },
+    });
+
+  if (authError) {
+    const alreadyExists = /already|registered|exists/i.test(authError.message);
+    return res.status(alreadyExists ? 409 : 400).json({
+      message: alreadyExists
+        ? "An account with this email already exists"
+        : authError.message,
+    });
+  }
+
+  // Create the matching admin profile row (read back by /auth/profile on login).
+  const { data: admin, error: adminError } = await supabase
+    .from("admins")
+    .insert([
+      {
+        auth_user_id: authData.user.id,
+        full_name,
+        email,
+        role: userRole,
+      },
+    ])
+    .select("id, auth_user_id, full_name, email, role, created_at")
+    .single();
+
+  if (adminError) {
+    // Roll back the auth user so we don't leave an orphaned account.
+    await supabase.auth.admin.deleteUser(authData.user.id);
+
+    if (adminError.code === "23505") {
+      return res.status(409).json({
+        message: "An admin with this email already exists",
+      });
+    }
+
+    console.error("Create admin profile error:", adminError);
+    return res.status(500).json({
+      message: "Failed to create admin profile",
     });
   }
 
   return res.status(201).json({
     message: "Admin registered successfully",
-    user: data.user,
+    admin,
   });
 };
 
