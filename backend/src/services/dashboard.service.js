@@ -30,7 +30,7 @@ export const getGeneratedLettersCountService = async() => {
       count: "exact",
       head: true,
     })
-    .eq("generate", true);
+    .eq("generated", true);
 
   return { count, error };
 };
@@ -48,11 +48,27 @@ export const getEmailSendingStatusCountByModeService = async(mode) => {
 }
 
 export const getStudentsByDepartmentsService = async() => {
-  const {data, error} = await supabase
-    .from("students_by_department")
-    .select("department_name, student_count")
+  // Aggregate in code so we don't depend on a `students_by_department` DB view.
+  const { data, error } = await supabase
+    .from("students")
+    .select("department");
 
-  return { data, error };
+  if (error) {
+    return { data: null, error };
+  }
+
+  const counts = {};
+  for (const row of data) {
+    const dept = row.department || "Unknown";
+    counts[dept] = (counts[dept] || 0) + 1;
+  }
+
+  const result = Object.entries(counts).map(([department_name, student_count]) => ({
+    department_name,
+    student_count,
+  }));
+
+  return { data: result, error: null };
 };
 
 export const getRecentStudentsService = async () => {

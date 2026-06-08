@@ -29,24 +29,30 @@ export default function Dashboard() {
 
   useEffect(() => {
     const loadDashboard = async () => {
-      try {
-        const [statsData, modeData, departmentData, recentData] =
-          await Promise.all([
-            getDashboardStats(),
-            getModeOfEntryStats(),
-            getStudentsByDepartment(),
-            getRecentStudents(),
-          ]);
+      // Load each section independently so one failing request can't blank the
+      // entire dashboard.
+      const [statsRes, modeRes, departmentRes, recentRes] =
+        await Promise.allSettled([
+          getDashboardStats(),
+          getModeOfEntryStats(),
+          getStudentsByDepartment(),
+          getRecentStudents(),
+        ]);
 
-        setStats(statsData);
-        setModeStats(modeData);
-        setDepartmentStats(departmentData);
-        setRecentStudents(recentData);
-      } catch (error) {
-        console.error("Dashboard fetch error:", error);
-      } finally {
-        setLoading(false);
-      }
+      if (statsRes.status === "fulfilled") setStats(statsRes.value);
+      else console.error("Dashboard stats error:", statsRes.reason);
+
+      if (modeRes.status === "fulfilled") setModeStats(modeRes.value);
+      else console.error("Mode-of-entry error:", modeRes.reason);
+
+      if (departmentRes.status === "fulfilled")
+        setDepartmentStats(departmentRes.value);
+      else console.error("Students-by-department error:", departmentRes.reason);
+
+      if (recentRes.status === "fulfilled") setRecentStudents(recentRes.value);
+      else console.error("Recent students error:", recentRes.reason);
+
+      setLoading(false);
     };
 
     loadDashboard();
