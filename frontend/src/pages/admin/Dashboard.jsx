@@ -125,7 +125,8 @@ export default function Dashboard() {
         <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
           <h2 className="text-lg font-bold text-primary">Recent Admissions</h2>
 
-          <button className="text-primary text-sm font-medium flex items-center gap-1.5 hover:underline">
+          <button className="text-primary text-sm font-medium flex items-center gap-1.5 hover:underline"
+            onClick={() => navigate("/admin/students")}>
             View All
             <ArrowRight className="w-4 h-4" />
           </button>
