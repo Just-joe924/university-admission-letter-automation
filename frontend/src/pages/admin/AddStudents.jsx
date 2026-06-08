@@ -32,6 +32,7 @@ export default function AddStudent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     if (
       !formData.full_name ||
@@ -48,10 +49,7 @@ export default function AddStudent() {
     try {
       setLoading(true);
 
-      await createStudent({
-        ...formData,
-        admission_number: formData.admission_number || `ADM/${Date.now()}`,
-      });
+      await createStudent(formData);
 
       navigate("/admin/students");
     } catch (error) {

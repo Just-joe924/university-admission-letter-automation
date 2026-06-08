@@ -20,7 +20,7 @@ export default function Students() {
   const loadStudents = async () => {
     try {
       const data = await getAllStudents();
-      setStudents(data);
+      setStudents(data.students || data);
     } catch (error) {
       console.error("Fetch students error:", error);
     } finally {
