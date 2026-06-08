@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { createStudent } from "../../services/studentApi";
+import { DEPARTMENT_COURSES, DEPARTMENTS } from "../../constants/departments";
 
 export default function AddStudent() {
   const navigate = useNavigate();
@@ -20,15 +21,21 @@ export default function AddStudent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const departments = ["Computer Science", "Engineering", "Mathematics", "Mass Communication"];
-
   const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    const { name, value } = e.target;
+
+    setFormData((prev) => {
+      // Reset the course whenever the department changes, since the available
+      // courses depend on the selected department.
+      if (name === "department") {
+        return { ...prev, department: value, course: "" };
+      }
+      return { ...prev, [name]: value };
+    });
     setError("");
   };
+
+  const courseOptions = DEPARTMENT_COURSES[formData.department] || [];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -118,7 +125,7 @@ export default function AddStudent() {
                   className="w-full h-11 rounded-xl border border-slate-300 px-4 text-sm outline-none focus:border-primary"
                 >
                   <option value="">Select Department</option>
-                  {departments.map((dept) => (
+                  {DEPARTMENTS.map((dept) => (
                     <option key={dept} value={dept}>
                       {dept}
                     </option>
@@ -126,13 +133,29 @@ export default function AddStudent() {
                 </select>
               </div>
 
-              <FormField
-                label="Course/Programme *"
-                name="course"
-                value={formData.course}
-                onChange={handleChange}
-                placeholder="e.g., Computer Science"
-              />
+              <div>
+                <label className="block text-sm font-semibold text-primary mb-1.5">
+                  Course/Programme *
+                </label>
+                <select
+                  name="course"
+                  value={formData.course}
+                  onChange={handleChange}
+                  disabled={!formData.department}
+                  className="w-full h-11 rounded-xl border border-slate-300 px-4 text-sm outline-none focus:border-primary disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
+                >
+                  <option value="">
+                    {formData.department
+                      ? "Select Course"
+                      : "Select a department first"}
+                  </option>
+                  {courseOptions.map((course) => (
+                    <option key={course} value={course}>
+                      {course}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">

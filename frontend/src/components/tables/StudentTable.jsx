@@ -69,7 +69,11 @@ export default function StudentsTable({ students, onDelete, onView }) {
                       <Download className="w-4 h-4 text-purple-600" />
                     </button>
 
-                    <button type="button" onClick={() => onDelete(student.id)}>
+                    <button
+                      type="button"
+                      title="Delete student"
+                      onClick={() => onDelete(student)}
+                    >
                       <Trash2 className="w-4 h-4 text-red-600" />
                     </button>
                   </div>

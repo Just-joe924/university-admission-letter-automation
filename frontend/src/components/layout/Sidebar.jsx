@@ -39,7 +39,7 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/admin/login");
+    navigate("/login");
   };
 
   return (

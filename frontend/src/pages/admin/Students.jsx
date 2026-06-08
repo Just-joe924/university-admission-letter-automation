@@ -58,16 +58,18 @@ export default function Students() {
     });
   }, [students, search, department, mode, status]);
 
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm("Delete this student record?");
+  const handleDelete = async (student) => {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete ${student.full_name}'s record? This action cannot be undone.`
+    );
     if (!confirmDelete) return;
 
     try {
-      await deleteStudent(id);
+      await deleteStudent(student.id);
       await loadStudents();
     } catch (error) {
       console.error("Delete student error:", error);
-      alert("Failed to delete student.");
+      alert(error.response?.data?.message || "Failed to delete student.");
     }
   };
 
