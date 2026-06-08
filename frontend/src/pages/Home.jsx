@@ -280,7 +280,7 @@ export default function Home() {
               </li>
               <li>
                 <button
-                  onClick={() => navigate("/admin/login")}
+                  onClick={() => navigate("/login")}
                   className="text-xs text-primary/60 hover:text-primary transition-colors"
                 >
                   Admin Login

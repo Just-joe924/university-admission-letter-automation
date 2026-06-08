@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Check, GraduationCap, Lock, Mail, Shield } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+
+  // Success notice passed from the signup page after a successful registration.
+  const successMessage = location.state?.message;
 
   const [formData, setFormData] = useState({
     email: "",
@@ -106,6 +110,12 @@ export default function AdminLogin() {
               </p>
             </div>
 
+            {successMessage && !error && (
+              <div className="mb-5 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                {successMessage}
+              </div>
+            )}
+
             {error && (
               <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
                 {error}
@@ -162,7 +172,7 @@ export default function AdminLogin() {
               Don&apos;t have an account?{" "}
               <button
                 type="button"
-                onClick={() => navigate("/admin/signup")}
+                onClick={() => navigate("/signup")}
                 className="font-medium text-primary hover:underline"
               >
                 Sign up here
