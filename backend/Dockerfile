@@ -1,5 +1,6 @@
 # Backend (Express + Puppeteer) container for Render / any Docker host.
-FROM node:20-bookworm-slim
+# Node 22: @supabase/supabase-js requires a native WebSocket (Node 21+).
+FROM node:22-bookworm-slim
 
 # System libraries required by the Chromium that Puppeteer downloads.
 RUN apt-get update && apt-get install -y --no-install-recommends \
