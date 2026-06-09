@@ -14,27 +14,6 @@ export default function Home() {
 
   // ── Data ───────────────────────────────────────────────────────────────────
 
-  const steps = [
-    {
-      number: "01",
-      title: "Enter Details",
-      description: "Students provide their email address and application number for verification.",
-      icon: <FileText className="w-5 h-5" />,
-    },
-    {
-      number: "02",
-      title: "Instant Verification",
-      description: "System verifies credentials against secure database in real-time.",
-      icon: <CircleCheck className="w-5 h-5" />,
-    },
-    {
-      number: "03",
-      title: "Download Letter",
-      description: "Access and download your official admission letter as a PDF document.",
-      icon: <Mail className="w-5 h-5" />,
-    },
-  ];
-
   const features = [
     {
       title: "Admission Verification",
@@ -62,28 +41,6 @@ export default function Home() {
     },
   ];
 
-  const stats = [
-    {
-      icon: <GraduationCap className="w-6 h-6 text-white/70" />,
-      value: "1,247",
-      label: "Active Students",
-    },
-    {
-      icon: <FileText className="w-6 h-6 text-white/70" />,
-      value: "1,189",
-      label: "Letters Generated",
-    },
-    {
-      icon: <Mail className="w-6 h-6 text-white/70" />,
-      value: "2,431",
-      label: "Emails Sent",
-    },
-    {
-      icon: <CircleCheck className="w-6 h-6 text-white/70" />,
-      value: "99.8%",
-      label: "Success Rate",
-    },
-  ];
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -170,40 +127,7 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════
-          3. HOW IT WORKS
-      ══════════════════════════════════════════ */}
-      <section className="bg-background py-16 px-6">
-        {/* Section heading */}
-        <div className="text-center mb-10">
-          <h2 className="text-xl font-bold text-primary mb-2">How It Works</h2>
-          <p className="text-sm text-primary">Simple, fast, and secure admission verification in three steps.</p>
-        </div>
-
-        {/* Step cards */}
-        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-5">
-          {steps.map((step) => (
-            <div
-              key={step.number}
-              className="rounded-xl border border-border bg-card p-5 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-            >
-              {/* Icon */}
-              <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center text-accent-foreground mb-4">
-                {step.icon}
-              </div>
-              {/* Step number */}
-              <p className="text-2xl font-bold text-muted/80 mb-1" style={{ letterSpacing: "-0.02em" }}>
-                {step.number}
-              </p>
-              {/* Title + description */}
-              <h3 className="text-sm font-semibold text-primary mb-1.5">{step.title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">{step.description}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════
-          4. KEY FEATURES
+          3. KEY FEATURES
       ══════════════════════════════════════════ */}
       <section className="bg-card py-16 px-6">
         {/* Section heading */}
@@ -231,22 +155,7 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════
-          5. STATS BAR
-      ══════════════════════════════════════════ */}
-      <section className="bg-primary py-10 px-6">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-8">
-          {stats.map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center text-center gap-2">
-              {stat.icon}
-              <p className="text-2xl font-bold text-primary-foreground leading-none">{stat.value}</p>
-              <p className="text-xs text-primary-foreground/60 leading-tight">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════
-          6. FOOTER
+          4. FOOTER
       ══════════════════════════════════════════ */}
       <footer className="bg-background border-t border-white/10">
         {/* Main footer grid */}

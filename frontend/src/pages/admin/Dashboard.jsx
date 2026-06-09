@@ -157,8 +157,15 @@ export default function Dashboard() {
                 <p className="text-sm text-slate-700">
                   {student.admission_number || "Pending"}
                 </p>
-                <span className="inline-block mt-1.5 px-3 py-0.5 rounded-full bg-green-100 text-green-700 text-xs">
-                  Generated
+                <span
+                  className={[
+                    "inline-block mt-1.5 px-3 py-0.5 rounded-full text-xs",
+                    student.letter_generated
+                      ? "bg-green-100 text-green-700"
+                      : "bg-orange-100 text-orange-700",
+                  ].join(" ")}
+                >
+                  {student.letter_generated ? "Generated" : "Pending"}
                 </span>
               </div>
             </div>

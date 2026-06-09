@@ -1,4 +1,4 @@
-import { Bell, Menu, Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 
 export default function Header({ onMenuClick = () => {} }) {
   return (
@@ -20,11 +20,6 @@ export default function Header({ onMenuClick = () => {} }) {
           className="w-full h-11 rounded-xl border border-slate-300 bg-white pl-11 pr-4 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
         />
       </div>
-
-      <button className="relative w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 transition shrink-0">
-        <Bell className="w-5 h-5 text-slate-700" />
-        <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-white" />
-      </button>
     </header>
   );
 }
