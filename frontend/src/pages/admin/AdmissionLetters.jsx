@@ -57,9 +57,9 @@ export default function AdmissionLetters() {
   const handleGenerate = async (studentId) => {
     try {
       setActionLoadingId(studentId);
-      await generateAdmissionLetter(studentId);
+      const data = await generateAdmissionLetter(studentId);
       await loadData();
-      alert("Admission letter generated successfully.");
+      alert(data?.message || "Admission letter generated.");
     } catch (error) {
       alert(
         error.response?.data?.message ||
@@ -73,8 +73,8 @@ export default function AdmissionLetters() {
   const handleResend = async (studentId) => {
     try {
       setActionLoadingId(studentId);
-      await resendAdmissionLetterEmail(studentId);
-      alert("Admission letter email resent successfully.");
+      const data = await resendAdmissionLetterEmail(studentId);
+      alert(data?.message || "Admission letter email re-queued.");
     } catch (error) {
       alert(
         error.response?.data?.message ||

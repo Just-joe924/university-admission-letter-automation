@@ -178,8 +178,8 @@ export default function EmailLogs() {
           >
             <option value="">All Status</option>
             <option value="sent">Sent</option>
-            <option value="failed">Failed</option>
             <option value="pending">Pending</option>
+            <option value="failed">Failed</option>
           </select>
         </div>
 
