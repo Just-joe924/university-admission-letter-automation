@@ -74,7 +74,7 @@ export const getStudentsByDepartmentsService = async() => {
 export const getRecentStudentsService = async () => {
   const { data, error } = await supabase
     .from("students")
-    .select("id, full_name, email, department, course, mode_of_entry, created_at")
+    .select("id, full_name, email, department, course, mode_of_entry, admission_number, letter_generated, created_at")
     .order("created_at", { ascending: false })
     .limit(5);
 

@@ -1,27 +1,11 @@
-import nodemailer from "nodemailer";
+import sgMail from "@sendgrid/mail";
 
-// Build the transporter lazily so we read env vars at send time (after dotenv /
-// the host has injected them) and can surface a clear config error.
-const buildTransporter = () => {
-  const host = process.env.EMAIL_HOST;
-  const port = Number(process.env.EMAIL_PORT) || 587;
-  const user = process.env.EMAIL_USER;
-  const pass = process.env.EMAIL_PASS;
-
-  if (!host || !user || !pass) {
-    throw new Error(
-      "Email is not configured. Set EMAIL_HOST, EMAIL_PORT, EMAIL_USER and EMAIL_PASS."
-    );
-  }
-
-  return nodemailer.createTransport({
-    host,
-    port,
-    // Port 465 uses implicit TLS (secure: true); 587/25 use STARTTLS (secure: false).
-    secure: port === 465,
-    auth: { user, pass },
-  });
-};
+// SendGrid transactional email. Configure with:
+//   SENDGRID_API_KEY  - your SendGrid API key
+//   EMAIL_FROM        - a verified SendGrid sender (single sender or domain)
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
 
 export const sendAdmissionLetterEmailService = async ({
   to,
@@ -29,12 +13,20 @@ export const sendAdmissionLetterEmailService = async ({
   pdfBuffer,
   fileName,
 }) => {
-  const transporter = buildTransporter();
+  if (!process.env.SENDGRID_API_KEY) {
+    throw new Error("Email is not configured. Set SENDGRID_API_KEY.");
+  }
 
-  const mailOptions = {
-    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+  if (!process.env.EMAIL_FROM) {
+    throw new Error(
+      "Email sender is not configured. Set EMAIL_FROM to a verified SendGrid sender."
+    );
+  }
+
+  const message = {
     to,
-    subject: "Your Admission Letter",
+    from: process.env.EMAIL_FROM,
+    subject: "Your Admission Letter from Caleb University",
     html: `
       <p>Dear ${studentName},</p>
 
@@ -46,12 +38,13 @@ export const sendAdmissionLetterEmailService = async ({
     `,
     attachments: [
       {
+        content: Buffer.from(pdfBuffer).toString("base64"),
         filename: fileName,
-        content: pdfBuffer,
-        contentType: "application/pdf",
+        type: "application/pdf",
+        disposition: "attachment",
       },
     ],
   };
 
-  return transporter.sendMail(mailOptions);
+  return sgMail.send(message);
 };

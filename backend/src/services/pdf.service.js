@@ -70,7 +70,14 @@ export const generateAdmissionLetterPDF = async (student) => {
 
   const browser = await puppeteer.launch({
     headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    // Flags to keep Chromium stable/low-memory on constrained hosts (Render free
+    // tier). --disable-dev-shm-usage avoids crashes from a small /dev/shm.
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu",
+    ],
   });
 
   try {

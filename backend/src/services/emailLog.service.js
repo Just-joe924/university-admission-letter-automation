@@ -36,3 +36,28 @@ export const getEmailLogsByStudentIdService = async (studentId) => {
 
   return { data, error };
 };
+
+// ── Queue helpers (email_logs acts as a simple DB-backed job queue) ──────────
+
+// Fetch the oldest pending jobs to process ("pending" is the queued state).
+export const getQueuedEmailLogsService = async (limit = 5) => {
+  const { data, error } = await supabase
+    .from("email_logs")
+    .select("*")
+    .eq("status", "pending")
+    .order("sent_at", { ascending: true })
+    .limit(limit);
+
+  return { data, error };
+};
+
+// Update a single email log row (status, error_message, sent_at, ...).
+export const updateEmailLogService = async (id, updates) => {
+  const { data, error } = await supabase
+    .from("email_logs")
+    .update(updates)
+    .eq("id", id)
+    .select();
+
+  return { data, error };
+};

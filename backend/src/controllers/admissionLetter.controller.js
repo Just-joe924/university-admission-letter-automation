@@ -6,7 +6,6 @@ import {
     getAdmissionLetterByStudentIdService,
     updateAdmissionLetterService, 
 }from "../services/admissionLetter.service.js";
-import { sendAdmissionLetterEmailService } from "../services/email.service.js";
 import { createEmailLogService } from "../services/emailLog.service.js";
 
 import { generateLetterReference } from "../utils/generateReference.js";
@@ -23,14 +22,10 @@ export const generateAdmissionLetter = async (req, res) => {
         });
     }
 
+    // If a letter already exists we regenerate it (idempotent), so clicking
+    // "Generate" again refreshes the PDF instead of failing.
     const {data : existingLetter} =
         await getAdmissionLetterByStudentIdService(studentId);
-    
-    if (existingLetter) {
-        return res.status(400).json({
-            message: "Admission letter already exists for this student",
-        });
-    }
 
     const fileName = `${student.admission_number}-${Date.now()}.pdf`;
 
@@ -41,76 +36,67 @@ export const generateAdmissionLetter = async (req, res) => {
         fileName
     );
 
-    const letterReference = generateLetterReference(student);
+    const letterReference =
+        existingLetter?.letter_reference || generateLetterReference(student);
 
-    const {data, error} = await createAdmissionLetterService(
-        student.id,
-        letterReference,
-        pdfUrl
-    );
+    let admissionLetter;
 
-    if (error) {
-        console.error("Create Admission letter error:", error);
+    if (existingLetter) {
+        const { data, error } = await updateAdmissionLetterService(
+            existingLetter.id,
+            { pdf_url: pdfUrl, letter_reference: letterReference, generated: true }
+        );
 
-        if(error.code === "23505") {
-            return res.status(409).json({
-                message: "Admission letter already exists for this student",
+        if (error) {
+            console.error("Update admission letter error:", error);
+            return res.status(500).json({
+                message: "Failed to update admission letter record",
             });
         }
 
-        return res.status(500).json({
-            message: "Failed to save admission letter record",
-        });
-    }
+        admissionLetter = data?.[0];
+    } else {
+        const { data, error } = await createAdmissionLetterService(
+            student.id,
+            letterReference,
+            pdfUrl
+        );
 
-    const admissionLetter = data?.[0];
+        if (error) {
+            console.error("Create Admission letter error:", error);
+
+            if (error.code === "23505") {
+                return res.status(409).json({
+                    message: "Admission letter already exists for this student",
+                });
+            }
+
+            return res.status(500).json({
+                message: "Failed to save admission letter record",
+            });
+        }
+
+        admissionLetter = data?.[0];
+    }
 
     // Mark the student as having a generated letter so other screens stay in sync.
     await updateStudentService(student.id, { letter_generated: true });
 
-    try{
-        await sendAdmissionLetterEmailService({
-            to: student.email,
-            studentName: student.full_name,
-            pdfBuffer,
-            fileName,
-        });
-
-        await createEmailLogService(
-            student.id,
-            admissionLetter.id,
-            student.email,
-            "Your Admission Letter from Caleb University",
-            "sent"
-        );
-
-        await updateStudentService(student.id, { email_sent: true });
-
-    } catch (emailError){
-        console.error("Send email error:", emailError);
-
-        await createEmailLogService(
-            student.id,
-            admissionLetter.id,
-            student.email,
-            "Your Admission Letter from Caleb University",
-            "failed",
-            emailError.message
-        );
-
-        return res.status(201).json({
-            message: "Admission letter generated successfully, but failed to send email",
-            admissionLetter,
-            pdfUrl: admissionLetter.pdf_url,
-            emailSent: false,
-        });
-    }
+    // Queue the email for background delivery instead of sending it inline,
+    // so this request returns quickly and email failures don't block it.
+    await createEmailLogService(
+        student.id,
+        admissionLetter.id,
+        student.email,
+        "Your Admission Letter from Caleb University",
+        "pending"
+    );
 
     return res.status(201).json({
-        message: "Admission letter generated and emailed successfully ",
+        message: "Admission letter generated. The email has been queued for delivery.",
         admissionLetter,
         pdfUrl: admissionLetter.pdf_url,
-        emailSent: true,
+        emailQueued: true,
     });
 }
 
@@ -155,43 +141,56 @@ export const sendAdmissionLetterToStudent = async (req, res) => {
         return res.status(404).json({ message: "Student not found" });
     }
 
-    try {
-        const fileName = `${student.admission_number || student.id}-admission-letter.pdf`;
-        const pdfBuffer = await generateAdmissionLetterPDF(student);
+    // An email log must reference a letter, so make sure one exists first
+    // (generate it on the fly if the admin hasn't generated it yet).
+    let { data: letter } = await getAdmissionLetterByStudentIdService(studentId);
 
-        await sendAdmissionLetterEmailService({
-            to: student.email,
-            studentName: student.full_name,
-            pdfBuffer,
-            fileName,
-        });
-
-        // best-effort logging — link to an existing letter row if one exists
+    if (!letter) {
         try {
-            const { data: letter } = await getAdmissionLetterByStudentIdService(studentId);
+            const fileName = `${student.admission_number}-${Date.now()}.pdf`;
+            const pdfBuffer = await generateAdmissionLetterPDF(student);
+            const pdfUrl = await uploadAdmissionLetterService(pdfBuffer, fileName);
+            const letterReference = generateLetterReference(student);
 
-            await createEmailLogService(
-                student.id,
-                letter?.id ?? null,
-                student.email,
-                "Your Admission Letter from Caleb University",
-                "sent"
-            );
-        } catch (logError) {
-            console.error("Email log error:", logError);
+            const { data: created, error: createError } =
+                await createAdmissionLetterService(student.id, letterReference, pdfUrl);
+
+            if (createError) {
+                console.error("Create admission letter error:", createError);
+                return res.status(500).json({
+                    message: "Failed to prepare admission letter",
+                });
+            }
+
+            letter = created?.[0];
+            await updateStudentService(student.id, { letter_generated: true });
+        } catch (err) {
+            console.error("Prepare admission letter error:", err);
+            return res.status(500).json({
+                message: "Failed to prepare admission letter",
+            });
         }
+    }
 
-        return res.status(200).json({
-            message: "Admission letter sent to your email successfully",
-            emailSent: true,
-        });
-    } catch (emailError) {
-        console.error("Send admission letter error:", emailError);
+    const { error: queueError } = await createEmailLogService(
+        student.id,
+        letter.id,
+        student.email,
+        "Your Admission Letter from Caleb University",
+        "pending"
+    );
+
+    if (queueError) {
+        console.error("Queue email error:", queueError);
         return res.status(500).json({
-            message: "Failed to send admission letter email",
-            detail: emailError.message,
+            message: "Failed to queue admission letter email",
         });
     }
+
+    return res.status(202).json({
+        message: "Your admission letter will be emailed to you shortly.",
+        emailQueued: true,
+    });
 };
 
 export const getAdmissionLetterByStudentId = async (req, res) => {
@@ -256,46 +255,25 @@ export const resendAdmissionLetterEmail = async (req, res) => {
         });
     }
 
-    try{
-        //re-generate PDF atachment from student data
-        const fileName = `${student.admission_number}-resend.pdf`    
-        const pdfBuffer = await generateAdmissionLetterPDF(student);
+    // Re-queue the email for background delivery.
+    const { error: queueError } = await createEmailLogService(
+        student.id,
+        admissionLetter.id,
+        student.email,
+        "Your Admission Letter from Caleb University",
+        "pending"
+    );
 
-        await sendAdmissionLetterEmailService({
-            to: student.email,
-            studentName: student.full_name,
-            pdfBuffer,
-            fileName,
-        });
-
-        await createEmailLogService(
-            student.id,
-            admissionLetter.id,
-            student.email,
-            "Your Admission Letter from Caleb University",
-            "sent"
-        );
-
-        return res.status(200).json({
-            message: "Admission letter email sent successfully",
-            admissionLetter,
-            emailSent: true,
-        })
-
-    }catch(emailError){
-        console.error("Send email error:", emailError);
-
-        await createEmailLogService(
-            student.id,
-            admissionLetter.id,
-            student.email,
-            "Your Admission Letter from Caleb University",
-            "failed",
-            emailError.message
-        );
-
+    if (queueError) {
+        console.error("Queue email error:", queueError);
         return res.status(500).json({
-            message: "Failed to send admission letter email",
+            message: "Failed to queue admission letter email",
         });
     }
+
+    return res.status(202).json({
+        message: "Admission letter email re-queued for delivery.",
+        admissionLetter,
+        emailQueued: true,
+    });
 }
