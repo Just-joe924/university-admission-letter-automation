@@ -75,7 +75,10 @@ export const generateAdmissionLetterPDF = async (student) => {
 
   try {
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle0" });
+    // The HTML is fully self-contained (inlined CSS + logo), so there's nothing
+    // to wait on the network for. Using "networkidle0" can hang on some hosts
+    // (Render) and trigger a 30s navigation timeout, so wait for DOM only.
+    await page.setContent(html, { waitUntil: "domcontentloaded", timeout: 60000 });
 
     const pdfBuffer = await page.pdf({
       format: "A4",

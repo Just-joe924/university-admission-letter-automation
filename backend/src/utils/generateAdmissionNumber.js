@@ -1,6 +1,6 @@
 import { supabase } from "../config/supabase.js";
 
-export const generateAdmissionNumber = async () => {
+export const generateAdmissionNumber = async (session) => {
   const { count, error } = await supabase
     .from("students")
     .select("*", {
@@ -14,7 +14,9 @@ export const generateAdmissionNumber = async () => {
 
   const nextNumber = (count || 0) + 1;
 
-  const year = new Date().getFullYear();
+  // Use the session's starting year (e.g. "2025/2026" -> 2025) so the admission
+  // number matches the academic session; fall back to the current year.
+  const year = session?.split("/")[0] || new Date().getFullYear();
 
   return `ADM/${year}/${String(nextNumber).padStart(5, "0")}`;
 };

@@ -28,10 +28,11 @@ export const createStudent = async (req, res) => {
     mode_of_entry,
     admission_number,
     application_number,
+    session,
   } = req.body;
 
   const generatedAdmissionNumber =
-    admission_number || (await generateAdmissionNumber());
+    admission_number || (await generateAdmissionNumber(session));
 
   const { data, error } = await createStudentService({
     full_name,
@@ -41,6 +42,7 @@ export const createStudent = async (req, res) => {
     mode_of_entry,
     admission_number: generatedAdmissionNumber,
     application_number,
+    session,
   });
 
   if (error) {
