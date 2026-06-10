@@ -17,15 +17,26 @@ export const sendAdmissionLetterEmailService = async ({
     throw new Error("Email is not configured. Set SENDGRID_API_KEY.");
   }
 
-  if (!process.env.EMAIL_FROM) {
+  // Trim to guard against a stray space/newline pasted into the env value,
+  // which makes SendGrid reject the address as "Invalid from email address".
+  const from = process.env.EMAIL_FROM?.trim();
+
+  if (!from) {
     throw new Error(
       "Email sender is not configured. Set EMAIL_FROM to a verified SendGrid sender."
     );
   }
 
+  // Must be a full mailbox (name@domain.tld), not a bare domain or display name.
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(from)) {
+    throw new Error(
+      `EMAIL_FROM is not a valid email address: "${from}". Use a verified sender like admissions@yourdomain.com.`
+    );
+  }
+
   const message = {
     to,
-    from: process.env.EMAIL_FROM,
+    from,
     subject: "Your Admission Letter from Caleb University",
     html: `
       <p>Dear ${studentName},</p>
