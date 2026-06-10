@@ -9,6 +9,17 @@ import {
 
 let processing = false;
 
+// SendGrid puts the real failure reason in error.response.body.errors (e.g.
+// "The from address does not match a verified Sender Identity"). Surface that
+// instead of the generic "Bad Request" so the email log is actionable.
+const formatSendError = (err) => {
+  const sgErrors = err?.response?.body?.errors;
+  if (Array.isArray(sgErrors) && sgErrors.length) {
+    return sgErrors.map((e) => e.message).filter(Boolean).join("; ");
+  }
+  return err?.message || "Unknown error";
+};
+
 // Get the letter PDF for a student: prefer the already-uploaded file (cheap),
 // fall back to regenerating it with Puppeteer.
 const getLetterPdfBuffer = async (student) => {
@@ -70,10 +81,11 @@ export const processEmailQueue = async () => {
 
         await updateStudentService(student.id, { email_sent: true });
       } catch (sendError) {
-        console.error("Email job failed:", sendError?.message || sendError);
+        const reason = formatSendError(sendError);
+        console.error("Email job failed:", reason);
         await updateEmailLogService(job.id, {
           status: "failed",
-          error_message: sendError?.message || "Unknown error",
+          error_message: reason,
         });
       }
     }
