@@ -49,9 +49,15 @@ export const createStudent = async (req, res) => {
     console.error("Insert student error:", error);
 
     if (error.code === "23505") {
+      // Identify which unique field actually clashed for a clearer message.
+      const detail = `${error.details || ""} ${error.message || ""}`.toLowerCase();
+      let field = "email, admission number, or application number";
+      if (detail.includes("email")) field = "email";
+      else if (detail.includes("admission_number")) field = "admission number";
+      else if (detail.includes("application_number")) field = "application number";
+
       return res.status(409).json({
-        message:
-          "A student with this email, admission number, or application number already exists",
+        message: `A student with this ${field} already exists`,
       });
     }
 
