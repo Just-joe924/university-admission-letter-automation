@@ -23,10 +23,20 @@ export default function StudentDetailsModal({ student, onClose, onUpdated }) {
         const data = await getAdmissionLetterByStudent(student.id);
         if (!cancelled) setLetter(data.admissionLetter);
       } catch (error) {
-        // A 404 just means no letter has been generated yet.
-        if (!cancelled) setLetter(null);
+        if (cancelled) return;
+        setLetter(null);
+
+        // A 404 just means no letter has been generated yet. Anything else
+        // (backend unreachable, CORS, server error) must be visible, otherwise
+        // the buttons silently look disabled for no reason.
         if (error.response?.status !== 404) {
           console.error("Fetch admission letter error:", error);
+          setFeedback({
+            type: "error",
+            message: error.response
+              ? errorMessage(error, "Failed to load the admission letter.")
+              : "Could not reach the server to load the admission letter. Please try again.",
+          });
         }
       } finally {
         if (!cancelled) setLoadingLetter(false);
@@ -43,11 +53,6 @@ export default function StudentDetailsModal({ student, onClose, onUpdated }) {
   const hasLetter = Boolean(letter?.pdf_url);
   const letterGenerated = hasLetter || Boolean(student.letter_generated);
   const isBusy = Boolean(busyAction);
-
-  const errorMessage = (error, fallback) => {
-    const data = error.response?.data;
-    return [data?.message, data?.detail].filter(Boolean).join(": ") || fallback;
-  };
 
   const handleView = () => {
     setFeedback(null);
@@ -286,6 +291,11 @@ export default function StudentDetailsModal({ student, onClose, onUpdated }) {
       </div>
     </div>
   );
+}
+
+function errorMessage(error, fallback) {
+  const data = error.response?.data;
+  return [data?.message, data?.detail].filter(Boolean).join(": ") || fallback;
 }
 
 function DetailItem({ label, value }) {
