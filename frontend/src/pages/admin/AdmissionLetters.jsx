@@ -85,15 +85,6 @@ export default function AdmissionLetters() {
     }
   };
 
-  const handleView = (letter) => {
-    if (!letter?.pdf_url) {
-      alert("No PDF found for this student.");
-      return;
-    }
-
-    window.open(letter.pdf_url, "_blank");
-  };
-
   const handleDownload = (letter) => {
     if (!letter?.pdf_url) {
       alert("No PDF found for this student.");
@@ -181,21 +172,20 @@ export default function AdmissionLetters() {
 
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          disabled={!hasLetter}
-                          onClick={() => handleView(letter)}
-                          title="View PDF"
-                        >
-                          <Eye
-                            className={[
-                              "w-4 h-4",
-                              hasLetter
-                                ? "text-blue-600"
-                                : "text-slate-300",
-                            ].join(" ")}
-                          />
-                        </button>
+                        {hasLetter ? (
+                          <a
+                            href={letter.pdf_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="View PDF"
+                          >
+                            <Eye className="w-4 h-4 text-blue-600" />
+                          </a>
+                        ) : (
+                          <button type="button" disabled title="View PDF">
+                            <Eye className="w-4 h-4 text-slate-300" />
+                          </button>
+                        )}
 
                         <button
                           type="button"

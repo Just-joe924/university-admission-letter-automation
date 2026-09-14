@@ -54,20 +54,6 @@ export default function StudentDetailsModal({ student, onClose, onUpdated }) {
   const letterGenerated = hasLetter || Boolean(student.letter_generated);
   const isBusy = Boolean(busyAction);
 
-  const handleView = () => {
-    setFeedback(null);
-
-    if (!hasLetter) {
-      setFeedback({
-        type: "error",
-        message: "No admission letter yet. Generate one first.",
-      });
-      return;
-    }
-
-    window.open(letter.pdf_url, "_blank", "noopener,noreferrer");
-  };
-
   const handleGenerate = async () => {
     setFeedback(null);
 
@@ -223,7 +209,7 @@ export default function StudentDetailsModal({ student, onClose, onUpdated }) {
             <ActionButton
               color="bg-blue-600 hover:bg-blue-700"
               icon={FileText}
-              onClick={handleView}
+              href={letter?.pdf_url}
               disabled={loadingLetter || !hasLetter || isBusy}
             >
               View Admission Letter
@@ -312,22 +298,35 @@ function ActionButton({
   color,
   icon: Icon,
   onClick,
+  href,
   disabled = false,
   loading = false,
 }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={`flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${color}`}
-    >
+  const className = `flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${color}`;
+  const content = (
+    <>
       {loading ? (
         <Loader2 className="h-5 w-5 animate-spin" />
       ) : (
         <Icon className="h-5 w-5" />
       )}
       {children}
+    </>
+  );
+
+  // A real link is never popup-blocked, unlike window.open(), which browsers
+  // (notably iPad/mobile Safari and touch emulation) can silently ignore.
+  if (href && !disabled) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <button type="button" onClick={onClick} disabled={disabled} className={className}>
+      {content}
     </button>
   );
 }
