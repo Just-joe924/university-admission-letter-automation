@@ -1,7 +1,140 @@
-import { Download, FileText, Mail, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Download, FileText, Loader2, Mail, X } from "lucide-react";
 
-export default function StudentDetailsModal({ student, onClose }) {
-  const letterGenerated = Boolean(student.letter_generated);
+import {
+  generateAdmissionLetter,
+  getAdmissionLetterByStudent,
+  resendAdmissionLetterEmail,
+} from "../../services/admissionLetterApi";
+import { downloadFileFromUrl } from "../../utils/downloadFile";
+
+export default function StudentDetailsModal({ student, onClose, onUpdated }) {
+  const [letter, setLetter] = useState(null);
+  const [loadingLetter, setLoadingLetter] = useState(true);
+  const [busyAction, setBusyAction] = useState(null); // "generate" | "resend" | "download"
+  const [feedback, setFeedback] = useState(null); // { type: "success" | "error", message }
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadLetter = async () => {
+      try {
+        setLoadingLetter(true);
+        const data = await getAdmissionLetterByStudent(student.id);
+        if (!cancelled) setLetter(data.admissionLetter);
+      } catch (error) {
+        // A 404 just means no letter has been generated yet.
+        if (!cancelled) setLetter(null);
+        if (error.response?.status !== 404) {
+          console.error("Fetch admission letter error:", error);
+        }
+      } finally {
+        if (!cancelled) setLoadingLetter(false);
+      }
+    };
+
+    loadLetter();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [student.id]);
+
+  const hasLetter = Boolean(letter?.pdf_url);
+  const letterGenerated = hasLetter || Boolean(student.letter_generated);
+  const isBusy = Boolean(busyAction);
+
+  const errorMessage = (error, fallback) => {
+    const data = error.response?.data;
+    return [data?.message, data?.detail].filter(Boolean).join(": ") || fallback;
+  };
+
+  const handleView = () => {
+    setFeedback(null);
+
+    if (!hasLetter) {
+      setFeedback({
+        type: "error",
+        message: "No admission letter yet. Generate one first.",
+      });
+      return;
+    }
+
+    window.open(letter.pdf_url, "_blank", "noopener,noreferrer");
+  };
+
+  const handleGenerate = async () => {
+    setFeedback(null);
+
+    try {
+      setBusyAction("generate");
+      const data = await generateAdmissionLetter(student.id);
+      setLetter(data.admissionLetter);
+      setFeedback({
+        type: "success",
+        message: data?.message || "Admission letter generated.",
+      });
+      onUpdated?.();
+    } catch (error) {
+      console.error("Generate admission letter error:", error);
+      setFeedback({
+        type: "error",
+        message: errorMessage(error, "Failed to generate admission letter."),
+      });
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
+  const handleResend = async () => {
+    setFeedback(null);
+
+    try {
+      setBusyAction("resend");
+      const data = await resendAdmissionLetterEmail(student.id);
+      setFeedback({
+        type: "success",
+        message:
+          data?.message || `Admission letter email queued for ${student.email}.`,
+      });
+    } catch (error) {
+      console.error("Resend admission letter error:", error);
+      setFeedback({
+        type: "error",
+        message: errorMessage(error, "Failed to resend admission letter email."),
+      });
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
+  const handleDownload = async () => {
+    setFeedback(null);
+
+    if (!hasLetter) {
+      setFeedback({
+        type: "error",
+        message: "No admission letter yet. Generate one first.",
+      });
+      return;
+    }
+
+    try {
+      setBusyAction("download");
+      await downloadFileFromUrl(
+        letter.pdf_url,
+        `admission-letter-${student.admission_number || student.id}.pdf`
+      );
+    } catch (error) {
+      console.error("Download admission letter error:", error);
+      setFeedback({
+        type: "error",
+        message: "Failed to download the admission letter. Please try again.",
+      });
+    } finally {
+      setBusyAction(null);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
@@ -73,24 +206,81 @@ export default function StudentDetailsModal({ student, onClose }) {
                 {letterGenerated ? "Generated" : "Pending"}
               </span>
             </div>
+
+            {letter?.letter_reference && (
+              <p className="mt-3 text-xs text-slate-600">
+                Letter Ref.: {letter.letter_reference}
+              </p>
+            )}
           </section>
 
           <div className="space-y-3">
-            <ActionButton color="bg-blue-600 hover:bg-blue-700" icon={FileText}>
+            <ActionButton
+              color="bg-blue-600 hover:bg-blue-700"
+              icon={FileText}
+              onClick={handleView}
+              disabled={loadingLetter || !hasLetter || isBusy}
+            >
               View Admission Letter
             </ActionButton>
 
-            <ActionButton color="bg-green-600 hover:bg-green-700" icon={FileText}>
-              Generate Admission Letter
+            <ActionButton
+              color="bg-green-600 hover:bg-green-700"
+              icon={FileText}
+              onClick={handleGenerate}
+              disabled={loadingLetter || isBusy}
+              loading={busyAction === "generate"}
+            >
+              {busyAction === "generate"
+                ? "Generating..."
+                : hasLetter
+                  ? "Regenerate Admission Letter"
+                  : "Generate Admission Letter"}
             </ActionButton>
 
-            <ActionButton color="bg-purple-600 hover:bg-purple-700" icon={Mail}>
-              Resend Email
+            <ActionButton
+              color="bg-purple-600 hover:bg-purple-700"
+              icon={Mail}
+              onClick={handleResend}
+              disabled={loadingLetter || !hasLetter || isBusy}
+              loading={busyAction === "resend"}
+            >
+              {busyAction === "resend" ? "Sending..." : "Resend Email"}
             </ActionButton>
 
-            <ActionButton color="bg-slate-600 hover:bg-slate-700" icon={Download}>
-              Download PDF
+            <ActionButton
+              color="bg-slate-600 hover:bg-slate-700"
+              icon={Download}
+              onClick={handleDownload}
+              disabled={loadingLetter || !hasLetter || isBusy}
+              loading={busyAction === "download"}
+            >
+              {busyAction === "download" ? "Preparing..." : "Download PDF"}
             </ActionButton>
+
+            {loadingLetter && (
+              <p className="text-center text-sm text-slate-500">
+                Checking admission letter...
+              </p>
+            )}
+
+            {!loadingLetter && !hasLetter && !feedback && (
+              <p className="text-center text-sm text-slate-500">
+                Generate the admission letter to enable viewing, downloading and
+                emailing.
+              </p>
+            )}
+
+            {feedback && (
+              <p
+                className={[
+                  "text-center text-sm",
+                  feedback.type === "success" ? "text-green-600" : "text-red-600",
+                ].join(" ")}
+              >
+                {feedback.message}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -107,13 +297,26 @@ function DetailItem({ label, value }) {
   );
 }
 
-function ActionButton({ children, color, icon: Icon }) {
+function ActionButton({
+  children,
+  color,
+  icon: Icon,
+  onClick,
+  disabled = false,
+  loading = false,
+}) {
   return (
     <button
       type="button"
-      className={`flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white transition ${color}`}
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${color}`}
     >
-      <Icon className="h-5 w-5" />
+      {loading ? (
+        <Loader2 className="h-5 w-5 animate-spin" />
+      ) : (
+        <Icon className="h-5 w-5" />
+      )}
       {children}
     </button>
   );
