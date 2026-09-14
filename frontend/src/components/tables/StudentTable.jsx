@@ -1,8 +1,16 @@
-import { Download, Eye, FileText, Pencil, Trash2 } from "lucide-react";
+import { Download, Eye, FileText, Loader2, Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function StudentsTable({ students, onDelete, onView }) {
+export default function StudentsTable({
+  students,
+  onDelete,
+  onView,
+  onGenerate,
+  onDownload,
+  busyAction, // { studentId, type: "generate" | "download" } | null
+}) {
   const navigate = useNavigate();
+  const isBusy = (student) => busyAction?.studentId === student.id;
 
   return (
     <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-5">
@@ -61,12 +69,45 @@ export default function StudentsTable({ students, onDelete, onView }) {
                       <Pencil className="w-4 h-4 text-slate-600" />
                     </button>
 
-                    <button type="button">
-                      <FileText className="w-4 h-4 text-green-600" />
+                    <button
+                      type="button"
+                      title={
+                        student.letter_generated
+                          ? "Regenerate admission letter"
+                          : "Generate admission letter"
+                      }
+                      disabled={isBusy(student)}
+                      onClick={() => onGenerate(student)}
+                      className="disabled:cursor-not-allowed"
+                    >
+                      {busyAction?.studentId === student.id &&
+                      busyAction.type === "generate" ? (
+                        <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />
+                      ) : (
+                        <FileText className="w-4 h-4 text-green-600" />
+                      )}
                     </button>
 
-                    <button type="button">
-                      <Download className="w-4 h-4 text-purple-600" />
+                    <button
+                      type="button"
+                      title="Download admission letter PDF"
+                      disabled={isBusy(student) || !student.letter_generated}
+                      onClick={() => onDownload(student)}
+                      className="disabled:cursor-not-allowed"
+                    >
+                      {busyAction?.studentId === student.id &&
+                      busyAction.type === "download" ? (
+                        <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />
+                      ) : (
+                        <Download
+                          className={[
+                            "w-4 h-4",
+                            student.letter_generated
+                              ? "text-purple-600"
+                              : "text-slate-300",
+                          ].join(" ")}
+                        />
+                      )}
                     </button>
 
                     <button

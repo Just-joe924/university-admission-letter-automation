@@ -4,6 +4,11 @@ import { Plus, Search } from "lucide-react";
 import StudentsTable from "../../components/tables/StudentTable";
 import StudentDetailsModal from "../../components/modals/StudentDetailsModals";
 import { deleteStudent, getAllStudents } from "../../services/studentApi";
+import {
+  generateAdmissionLetter,
+  getAdmissionLetterByStudent,
+} from "../../services/admissionLetterApi";
+import { downloadFileFromUrl } from "../../utils/downloadFile";
 
 export default function Students() {
   const navigate = useNavigate();
@@ -16,6 +21,7 @@ export default function Students() {
   const [status, setStatus] = useState("");
 
   const [loading, setLoading] = useState(true);
+  const [busyAction, setBusyAction] = useState(null);
 
   const loadStudents = async () => {
     try {
@@ -70,6 +76,58 @@ export default function Students() {
     } catch (error) {
       console.error("Delete student error:", error);
       alert(error.response?.data?.message || "Failed to delete student.");
+    }
+  };
+
+  const handleGenerate = async (student) => {
+    if (
+      student.letter_generated &&
+      !window.confirm(
+        `${student.full_name} already has an admission letter. Regenerate it and email the student again?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setBusyAction({ studentId: student.id, type: "generate" });
+      const data = await generateAdmissionLetter(student.id);
+      await loadStudents();
+      alert(data?.message || "Admission letter generated.");
+    } catch (error) {
+      console.error("Generate admission letter error:", error);
+      alert(
+        error.response?.data?.message || "Failed to generate admission letter."
+      );
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
+  const handleDownload = async (student) => {
+    try {
+      setBusyAction({ studentId: student.id, type: "download" });
+      const data = await getAdmissionLetterByStudent(student.id);
+      const pdfUrl = data.admissionLetter?.pdf_url;
+
+      if (!pdfUrl) {
+        alert("No admission letter PDF found for this student.");
+        return;
+      }
+
+      await downloadFileFromUrl(
+        pdfUrl,
+        `admission-letter-${student.admission_number || student.id}.pdf`
+      );
+    } catch (error) {
+      console.error("Download admission letter error:", error);
+      alert(
+        error.response?.status === 404
+          ? "No admission letter found. Generate one first."
+          : "Failed to download the admission letter."
+      );
+    } finally {
+      setBusyAction(null);
     }
   };
 
@@ -148,6 +206,9 @@ export default function Students() {
           students={filteredStudents}
           onDelete={handleDelete}
           onView={(student) => setSelectedStudent(student)}
+          onGenerate={handleGenerate}
+          onDownload={handleDownload}
+          busyAction={busyAction}
         />
       </div>
 
@@ -155,6 +216,7 @@ export default function Students() {
         <StudentDetailsModal
           student={selectedStudent}
           onClose={() => setSelectedStudent(null)}
+          onUpdated={loadStudents}
         />
       )}
     </div>
