@@ -3,9 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { createStudent } from "../../services/studentApi";
 import { DEPARTMENT_COURSES, DEPARTMENTS } from "../../constants/departments";
+import BulkStudentUpload from "../../components/students/BulkStudentUpload";
+
+const ADD_MODES = [
+  ["single", "Add Single Student"],
+  ["bulk", "Bulk Upload Students"],
+];
 
 export default function AddStudent() {
   const navigate = useNavigate();
+  const [mode, setMode] = useState("single");
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -76,6 +83,32 @@ export default function AddStudent() {
         Back to Students
       </button>
 
+      <div
+        role="tablist"
+        className="mb-6 flex w-full rounded-xl border border-slate-200 bg-white p-1 shadow-sm sm:inline-flex sm:w-auto"
+      >
+        {ADD_MODES.map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            role="tab"
+            aria-selected={mode === value}
+            onClick={() => setMode(value)}
+            className={[
+              "h-9 flex-1 sm:flex-none rounded-lg px-4 text-sm font-semibold transition",
+              mode === value
+                ? "bg-primary text-white"
+                : "text-slate-600 hover:bg-slate-100",
+            ].join(" ")}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {mode === "bulk" ? (
+        <BulkStudentUpload />
+      ) : (
       <div className="bg-white rounded-2xl shadow-md border border-slate-100 px-5 py-6 sm:px-8 max-w-3xl">
         <h1 className="text-xl sm:text-2xl font-bold mb-1">Add New Student</h1>
         <p className="text-sm text-slate-600 mb-8">
@@ -244,6 +277,7 @@ export default function AddStudent() {
           </section>
         </form>
       </div>
+      )}
     </div>
   );
 }
