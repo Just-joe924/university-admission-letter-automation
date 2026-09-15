@@ -165,8 +165,10 @@ export default function StudentDetails() {
           <input
             name="admission_number"
             value={student.admission_number || ""}
-            onChange={handleChange}
-            className="border border-slate-300 rounded-xl h-11 px-4 text-sm outline-none focus:border-primary"
+            readOnly
+            aria-label="Admission number (generated automatically, can't be changed)"
+            title="Admission numbers are generated automatically and can't be changed"
+            className="border border-slate-200 bg-slate-50 text-slate-500 rounded-xl h-11 px-4 text-sm outline-none cursor-not-allowed"
           />
 
           <input

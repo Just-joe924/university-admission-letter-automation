@@ -21,7 +21,6 @@ export default function AddStudent() {
     course: "",
     mode_of_entry: "UTME",
     application_number: "",
-    admission_number: "",
     session: "2025/2026",
   });
 
@@ -228,18 +227,10 @@ export default function AddStudent() {
                 placeholder="e.g., APP2025001234"
               />
 
-              <div>
-                <FormField
-                  label="Admission Number"
-                  name="admission_number"
-                  value={formData.admission_number}
-                  onChange={handleChange}
-                  placeholder="Leave empty to auto-generate"
-                />
-                <p className="text-xs text-slate-500 mt-1.5">
-                  Optional - will be auto-generated if left empty
-                </p>
-              </div>
+              <p className="rounded-xl bg-slate-50 px-4 py-3 text-xs text-slate-600">
+                The admission number is generated automatically when the
+                student is saved.
+              </p>
 
               <div>
                 <label className="block text-sm font-semibold text-primary mb-1.5">

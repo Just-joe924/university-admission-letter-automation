@@ -36,7 +36,6 @@ const TEMPLATE_COLUMNS = [
   { name: "mode_of_entry", hint: "UTME or Direct Entry" },
   { name: "application_number", hint: "Unique; letters, numbers and / _ . -" },
   { name: "session", hint: "e.g. 2025/2026" },
-  { name: "admission_number", hint: "Auto-generated if left blank", optional: true },
 ];
 
 const PREVIEW_COLUMNS = [
@@ -47,7 +46,6 @@ const PREVIEW_COLUMNS = [
   ["mode_of_entry", "Mode"],
   ["application_number", "Application No."],
   ["session", "Session"],
-  ["admission_number", "Admission No."],
 ];
 
 const STATUS_STYLES = {
@@ -270,7 +268,11 @@ export default function BulkStudentUpload() {
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-xs text-slate-500">
+          <p className="mt-3 text-xs text-slate-600">
+            Admission numbers are generated automatically when students are
+            imported, so the file must not include them.
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
             Accepted files: {IMPORT_ACCEPTED_EXTENSIONS.join(", ")} · up to{" "}
             {formatFileSize(IMPORT_MAX_FILE_SIZE_BYTES)} and{" "}
             {IMPORT_MAX_ROWS.toLocaleString()} students per file. Only the first
