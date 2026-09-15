@@ -8,7 +8,6 @@ export const HEADER = [
   "mode_of_entry",
   "application_number",
   "session",
-  "admission_number",
 ];
 
 export const validStudent = (n, overrides = {}) => ({
@@ -19,7 +18,6 @@ export const validStudent = (n, overrides = {}) => ({
   mode_of_entry: "UTME",
   application_number: `APP2026${String(n).padStart(4, "0")}`,
   session: "2026/2027",
-  admission_number: "",
   ...overrides,
 });
 
@@ -41,24 +39,25 @@ export const workbookBuffer = (students, bookType = "xlsx", header = HEADER) => 
   return XLSX.write(workbook, { type: "buffer", bookType });
 };
 
-// In-memory stand-ins for the database calls, recording how they were used.
-export const fakeDeps = ({ existing = [], highest = 0, lookupError = null, insertResult } = {}) => {
-  const calls = { find: [], highest: [], insert: [] };
+// In-memory stand-ins for the import's database calls, recording how they were
+// used. Inserted students get admission numbers the way the database assigns them.
+export const fakeDeps = ({ existing = [], lookupError = null, insertResult } = {}) => {
+  const calls = { find: [], insert: [] };
 
   const deps = {
     findExistingStudents: async (query) => {
       calls.find.push(query);
       return lookupError ? { data: null, error: lookupError } : { data: existing, error: null };
     },
-    getHighestAdmissionSequence: async (prefix) => {
-      calls.highest.push(prefix);
-      return typeof highest === "function" ? highest(prefix) : highest;
-    },
     insertStudents: async (students) => {
       calls.insert.push(students);
       return (
         insertResult ?? {
-          data: students.map((student, i) => ({ id: `id-${i}`, ...student })),
+          data: students.map((student, i) => ({
+            id: `id-${i}`,
+            ...student,
+            admission_number: `ADM/2026/${String(i + 1).padStart(5, "0")}`,
+          })),
           error: null,
         }
       );

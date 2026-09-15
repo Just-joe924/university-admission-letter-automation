@@ -61,12 +61,16 @@ export const IMPORT_COLUMNS = [
     maxLength: 9,
     aliases: ["academic_session"],
   },
+];
+
+// Columns the database generates. They're not in the template; a file that
+// still has one is accepted only when the column is empty (the first import
+// template included admission_number), and any value is reported as a row error.
+export const IMPORT_GENERATED_COLUMNS = [
   {
-    // Optional: auto-generated during import when left blank, like the form.
     key: "admission_number",
-    label: "Admission number",
-    required: false,
-    maxLength: 50,
     aliases: ["admission_no"],
+    message:
+      "Admission numbers are generated automatically. Leave this column empty or remove it.",
   },
 ];

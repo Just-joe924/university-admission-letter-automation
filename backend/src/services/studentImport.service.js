@@ -1,31 +1,26 @@
 import { IMPORT_COLUMNS } from "../constants/studentImport.js";
-import {
-  formatAdmissionNumber,
-  getAdmissionNumberPrefix,
-  getHighestAdmissionSequence,
-  parseAdmissionSequence,
-} from "../utils/generateAdmissionNumber.js";
 import { ImportError } from "../utils/importError.js";
 import { parseSpreadsheet } from "../utils/parseSpreadsheet.js";
 import { validateStudentRecord } from "../utils/validateStudent.js";
 import {
+  ADMISSION_NUMBERING_NOT_READY,
   createStudentsService,
   findStudentsByUniqueFieldsService,
+  isAdmissionNumberConflict,
 } from "./student.service.js";
 
 // Database access is injectable so the import logic can be tested without Supabase.
 const defaultDeps = {
   findExistingStudents: findStudentsByUniqueFieldsService,
-  getHighestAdmissionSequence,
   insertStudents: createStudentsService,
 };
 
-// Unique student columns. Compared case-insensitively, so "A@x.com" and
-// "a@x.com" count as the same student.
+// Unique student columns supplied in the file. Compared case-insensitively, so
+// "A@x.com" and "a@x.com" count as the same student. Admission numbers are not
+// here: the database generates them during the insert.
 const UNIQUE_FIELDS = [
   { field: "email", label: "Email" },
   { field: "application_number", label: "Application number" },
-  { field: "admission_number", label: "Admission number" },
 ];
 
 const MAX_ROW_REFERENCES = 5;
@@ -45,7 +40,7 @@ const pickStudentFields = (student) =>
 
 export const buildImportTemplateCsv = () =>
   // The BOM makes Excel open the file as UTF-8.
-  `\uFEFF${IMPORT_COLUMNS.map((column) => column.key).join(",")}\r\n`;
+  `﻿${IMPORT_COLUMNS.map((column) => column.key).join(",")}\r\n`;
 
 const flagDuplicatesWithinFile = (rows) => {
   for (const { field, label } of UNIQUE_FIELDS) {
@@ -92,7 +87,6 @@ const flagDuplicatesInDatabase = async (rows, deps) => {
   const { data: existing, error } = await deps.findExistingStudents({
     emails: lookupValues("email"),
     applicationNumbers: lookupValues("application_number"),
-    admissionNumbers: lookupValues("admission_number"),
   });
 
   if (error) {
@@ -174,51 +168,9 @@ export const buildImportPreview = async (buffer, fileName, deps = defaultDeps) =
   };
 };
 
-// Gives rows without an admission number the next free numbers for their
-// session, continuing after the highest number in the database AND any number
-// supplied elsewhere in the same file.
-const assignAdmissionNumbers = async (students, deps) => {
-  const prefixes = new Set(
-    students
-      .filter((student) => !student.admission_number)
-      .map((student) => getAdmissionNumberPrefix(student.session))
-  );
-
-  const nextSequence = new Map();
-
-  for (const prefix of prefixes) {
-    let highest;
-    try {
-      highest = await deps.getHighestAdmissionSequence(prefix);
-    } catch (error) {
-      console.error("Import admission number error:", error);
-      throw new ImportError(
-        "Could not generate admission numbers. No students were imported. Please try again.",
-        502
-      );
-    }
-
-    for (const student of students) {
-      const sequence = parseAdmissionSequence(student.admission_number, prefix);
-      if (!Number.isNaN(sequence) && sequence > highest) highest = sequence;
-    }
-
-    nextSequence.set(prefix, highest + 1);
-  }
-
-  for (const student of students) {
-    if (student.admission_number) continue;
-
-    const prefix = getAdmissionNumberPrefix(student.session);
-    const sequence = nextSequence.get(prefix);
-
-    student.admission_number = formatAdmissionNumber(prefix, sequence);
-    nextSequence.set(prefix, sequence + 1);
-  }
-};
-
 // Re-parses and re-validates the uploaded file (never trusting an earlier
-// preview), then inserts every student in one all-or-nothing request.
+// preview), then inserts every student in one all-or-nothing request. The
+// database assigns each student's admission number during that insert.
 export const importStudentsFromFile = async (buffer, fileName, deps = defaultDeps) => {
   const preview = await buildImportPreview(buffer, fileName, deps);
 
@@ -235,16 +187,6 @@ export const importStudentsFromFile = async (buffer, fileName, deps = defaultDep
     student: pickStudentFields(row.data),
   }));
 
-  // Same shape as the single-student form: blank admission numbers are generated.
-  for (const record of records) {
-    record.student.admission_number = record.student.admission_number || null;
-  }
-
-  await assignAdmissionNumbers(
-    records.map((record) => record.student),
-    deps
-  );
-
   const { data, error } = await deps.insertStudents(
     records.map((record) => record.student)
   );
@@ -252,9 +194,23 @@ export const importStudentsFromFile = async (buffer, fileName, deps = defaultDep
   if (error) {
     console.error("Bulk insert students error:", error);
 
+    if (error.code === ADMISSION_NUMBERING_NOT_READY) {
+      throw new ImportError(
+        "Admission numbers can't be generated right now, so no students were imported. Please contact the system administrator.",
+        503
+      );
+    }
+
+    if (isAdmissionNumberConflict(error)) {
+      throw new ImportError(
+        "Could not assign unique admission numbers, so no students were imported. Please try again.",
+        409
+      );
+    }
+
     if (error.code === "23505") {
       throw new ImportError(
-        "A student with one of these emails, application numbers or admission numbers was saved while the import was running. No students were imported. Preview the file again and retry.",
+        "A student with one of these emails or application numbers was saved while the import was running. No students were imported. Preview the file again and retry.",
         409
       );
     }
@@ -282,7 +238,7 @@ export const importStudentsFromFile = async (buffer, fileName, deps = defaultDep
         full_name: student.full_name,
         email: student.email,
         application_number: student.application_number,
-        admission_number: saved?.admission_number ?? student.admission_number,
+        admission_number: saved?.admission_number ?? null,
       };
     }),
   };

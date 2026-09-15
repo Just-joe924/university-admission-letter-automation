@@ -9,8 +9,9 @@ import {
   buildImportTemplateCsv,
   importStudentsFromFile,
 } from "../src/services/studentImport.service.js";
+import { ADMISSION_NUMBERING_NOT_READY } from "../src/services/student.service.js";
 import { ImportError } from "../src/utils/importError.js";
-import { csvBuffer, fakeDeps, validStudent, workbookBuffer } from "./helpers/fixtures.js";
+import { HEADER, csvBuffer, fakeDeps, validStudent, workbookBuffer } from "./helpers/fixtures.js";
 
 const rowByNumber = (preview, rowNumber) =>
   preview.rows.find((row) => row.rowNumber === rowNumber);
@@ -142,7 +143,7 @@ test("flags students that already exist in the database", async () => {
   // Only the uploaded values are looked up (plus case variants), never the whole table.
   assert.ok(calls.find[0].emails.includes("student2@example.com"));
   assert.ok(calls.find[0].emails.includes("STUDENT2@EXAMPLE.COM"));
-  assert.deepEqual(calls.find[0].admissionNumbers, []);
+  assert.equal("admissionNumbers" in calls.find[0], false);
 });
 
 test("a database lookup failure stops the preview with a clear error", async () => {
@@ -152,6 +153,47 @@ test("a database lookup failure stops the preview with a clear error", async () 
     buildImportPreview(csvBuffer([validStudent(1)]), "students.csv", deps),
     (error) => error instanceof ImportError && error.status === 502
   );
+});
+
+test("admission numbers in the file are rejected, not imported", async () => {
+  const { deps, calls } = fakeDeps();
+  const header = [...HEADER, "admission_number"];
+  const file = csvBuffer(
+    [validStudent(1, { admission_number: "ADM/2026/00099" }), validStudent(2)],
+    header
+  );
+
+  const preview = await buildImportPreview(file, "students.csv", deps);
+
+  assert.equal(preview.canImport, false);
+  assert.deepEqual(rowByNumber(preview, 2).errors, [
+    {
+      field: "admission_number",
+      message:
+        "Admission numbers are generated automatically. Leave this column empty or remove it.",
+      type: "validation",
+    },
+  ]);
+  assert.equal(rowByNumber(preview, 3).status, "valid");
+
+  await assert.rejects(
+    importStudentsFromFile(file, "students.csv", deps),
+    (error) => error instanceof ImportError && error.status === 422
+  );
+  assert.equal(calls.insert.length, 0);
+});
+
+test("a file from the first template with an empty admission_number column still imports", async () => {
+  const { deps } = fakeDeps();
+
+  const preview = await buildImportPreview(
+    csvBuffer([validStudent(1), validStudent(2)], [...HEADER, "admission_number"]),
+    "students.csv",
+    deps
+  );
+
+  assert.equal(preview.canImport, true);
+  assert.deepEqual(preview.ignoredColumns, []);
 });
 
 test("import re-validates the file and inserts nothing when it has errors", async () => {
@@ -180,7 +222,7 @@ test("import re-checks the database instead of trusting an earlier preview", asy
 
   // Someone adds student2 between the preview and the import.
   const { deps, calls } = fakeDeps({
-    existing: [{ id: "x", email: "student2@example.com", application_number: "Z", admission_number: null }],
+    existing: [{ id: "x", email: "student2@example.com", application_number: "Z" }],
   });
 
   await assert.rejects(
@@ -190,48 +232,46 @@ test("import re-checks the database instead of trusting an earlier preview", asy
   assert.equal(calls.insert.length, 0);
 });
 
-test("import inserts every row in one call with the same fields as the form", async () => {
-  const { deps, calls } = fakeDeps({ highest: (prefix) => (prefix === "ADM/2026/" ? 6 : 2) });
+test("import sends no admission numbers and returns the ones the database assigned", async () => {
+  const { deps, calls } = fakeDeps();
 
   const result = await importStudentsFromFile(
-    csvBuffer([
-      validStudent(1),
-      validStudent(2, { admission_number: "ADM/2026/00010" }),
-      validStudent(3),
-      validStudent(4, { session: "2025/2026" }),
-    ]),
+    csvBuffer([validStudent(1), validStudent(2), validStudent(3, { session: "2025/2026" })]),
     "students.csv",
     deps
   );
 
   assert.equal(calls.insert.length, 1, "one all-or-nothing insert");
-  const inserted = calls.insert[0];
 
+  for (const student of calls.insert[0]) {
+    assert.deepEqual(
+      Object.keys(student).sort(),
+      IMPORT_COLUMNS.map((column) => column.key).sort()
+    );
+    assert.equal("admission_number" in student, false);
+  }
+
+  assert.equal(result.importedCount, 3);
   assert.deepEqual(
-    Object.keys(inserted[0]).sort(),
-    IMPORT_COLUMNS.map((column) => column.key).sort()
+    result.students.map((student) => student.admission_number),
+    ["ADM/2026/00001", "ADM/2026/00002", "ADM/2026/00003"]
   );
-
-  // Generated numbers continue after both the database max and numbers in the file.
-  assert.deepEqual(
-    inserted.map((student) => student.admission_number),
-    ["ADM/2026/00011", "ADM/2026/00010", "ADM/2026/00012", "ADM/2025/00003"]
-  );
-
-  assert.equal(result.importedCount, 4);
   assert.deepEqual(result.students[0], {
     rowNumber: 2,
     id: "id-0",
     full_name: "Student 1",
     email: "student1@example.com",
     application_number: "APP20260001",
-    admission_number: "ADM/2026/00011",
+    admission_number: "ADM/2026/00001",
   });
 });
 
-test("a unique-constraint clash during insert is reported as a 409", async () => {
+test("a unique-constraint clash on email or application number is reported as a 409", async () => {
   const { deps } = fakeDeps({
-    insertResult: { data: null, error: { code: "23505", message: "duplicate key" } },
+    insertResult: {
+      data: null,
+      error: { code: "23505", message: 'duplicate key value violates unique constraint "students_email_key"' },
+    },
   });
 
   await assert.rejects(
@@ -243,9 +283,23 @@ test("a unique-constraint clash during insert is reported as a 409", async () =>
   );
 });
 
-test("the template lists exactly the import columns", () => {
+test("import refuses to run when the database can't generate admission numbers", async () => {
+  const { deps } = fakeDeps({
+    insertResult: { data: null, error: { code: ADMISSION_NUMBERING_NOT_READY } },
+  });
+
+  await assert.rejects(
+    importStudentsFromFile(csvBuffer([validStudent(1)]), "students.csv", deps),
+    (error) =>
+      error instanceof ImportError &&
+      error.status === 503 &&
+      /no students were imported/.test(error.message)
+  );
+});
+
+test("the template lists exactly the import columns, without admission_number", () => {
   assert.equal(
     buildImportTemplateCsv(),
-    "\uFEFFfull_name,email,department,course,mode_of_entry,application_number,session,admission_number\r\n"
+    "﻿full_name,email,department,course,mode_of_entry,application_number,session\r\n"
   );
 });

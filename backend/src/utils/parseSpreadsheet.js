@@ -1,8 +1,16 @@
 import * as XLSX from "xlsx";
 import * as cptable from "xlsx/dist/cpexcel.full.mjs";
 
-import { IMPORT_COLUMNS, IMPORT_MAX_ROWS } from "../constants/studentImport.js";
+import {
+  IMPORT_COLUMNS,
+  IMPORT_GENERATED_COLUMNS,
+  IMPORT_MAX_ROWS,
+} from "../constants/studentImport.js";
 import { ImportError } from "./importError.js";
+
+// Every column a file may contain. Generated columns are read only so any
+// values in them can be reported; they are never imported.
+const FILE_COLUMNS = [...IMPORT_COLUMNS, ...IMPORT_GENERATED_COLUMNS];
 
 // Code pages let SheetJS decode legacy .xls files and non-UTF-8 CSVs.
 XLSX.set_cptable(cptable);
@@ -29,7 +37,7 @@ export const normalizeHeader = (header) =>
     .replace(/^_+|_+$/g, "");
 
 const HEADER_TO_FIELD = new Map(
-  IMPORT_COLUMNS.flatMap((column) =>
+  FILE_COLUMNS.flatMap((column) =>
     [column.key, ...column.aliases].map((name) => [name, column.key])
   )
 );
@@ -161,7 +169,7 @@ export const parseSpreadsheet = (buffer, fileName) => {
       return;
     }
 
-    const data = Object.fromEntries(IMPORT_COLUMNS.map((column) => [column.key, ""]));
+    const data = Object.fromEntries(FILE_COLUMNS.map((column) => [column.key, ""]));
     for (const [index, field] of columnFields) {
       data[field] = cleanCell(cells[index]);
     }
