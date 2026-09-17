@@ -16,6 +16,7 @@ import {
   previewStudentImport,
 } from "../../services/studentImportApi";
 import { saveBlob } from "../../utils/downloadFile";
+import { canSubmitImport } from "../../utils/importHistory";
 import {
   IMPORT_ACCEPTED_EXTENSIONS,
   IMPORT_MAX_FILE_SIZE_BYTES,
@@ -105,9 +106,14 @@ export default function BulkStudentUpload() {
   const [confirming, setConfirming] = useState(false);
   const [problemsOnly, setProblemsOnly] = useState(false);
   const [page, setPage] = useState(1);
+  const [submitted, setSubmitted] = useState(false);
+
+  // Blocks a second request from a double click before React re-renders.
+  const submittingRef = useRef(false);
 
   const isBusy = Boolean(busy);
   const importAllowed = canImportPreview(preview);
+  const canSubmit = canSubmitImport({ busy: isBusy, importAllowed, submitted });
 
   const rows = preview?.rows || [];
   const visibleRows = problemsOnly
@@ -127,6 +133,7 @@ export default function BulkStudentUpload() {
     setConfirming(false);
     setProblemsOnly(false);
     setPage(1);
+    setSubmitted(false);
   };
 
   const handleReset = () => {
@@ -190,13 +197,17 @@ export default function BulkStudentUpload() {
   };
 
   const handleImport = async () => {
-    if (!file || !importAllowed) return;
+    if (!file || !canSubmit || submittingRef.current) return;
 
+    submittingRef.current = true;
+    setSubmitted(true);
     setError("");
 
     try {
       setBusy("import");
-      const data = await importStudents(file);
+      // The preview's importId may only be used once, so the server rejects a
+      // repeated submission even if the button is somehow clicked twice.
+      const data = await importStudents(file, preview?.importId);
       clearPreview();
       setFile(null);
       clearFileInput();
@@ -218,6 +229,7 @@ export default function BulkStudentUpload() {
         )
       );
     } finally {
+      submittingRef.current = false;
       setBusy(null);
       setConfirming(false);
     }
@@ -429,6 +441,13 @@ export default function BulkStudentUpload() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => navigate("/admin/import-history")}
+                  className="h-11 px-5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+                >
+                  View Import History
+                </button>
+                <button
+                  type="button"
                   onClick={handleReset}
                   className="h-11 px-5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
                 >
@@ -622,7 +641,7 @@ export default function BulkStudentUpload() {
                   <button
                     type="button"
                     onClick={handleImport}
-                    disabled={isBusy || !importAllowed}
+                    disabled={!canSubmit}
                     className="h-11 px-5 rounded-xl bg-green-600 text-white text-sm font-semibold flex items-center justify-center gap-2 hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {busy === "import" && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -633,7 +652,7 @@ export default function BulkStudentUpload() {
                 <button
                   type="button"
                   onClick={() => setConfirming(true)}
-                  disabled={isBusy || !importAllowed}
+                  disabled={!canSubmit}
                   className="h-11 px-5 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {importAllowed

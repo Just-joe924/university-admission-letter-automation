@@ -18,6 +18,7 @@ import Dashboard from "../pages/admin/Dashboard";
 import Students from "../pages/admin/Students";
 import StudentDetails from "../pages/admin/StudentDetails";
 import AdmissionLetters from "../pages/admin/AdmissionLetters";
+import ImportHistory from "../pages/admin/ImportHistory";
 
 import NotFound from "../pages/NotFound";
 
@@ -86,6 +87,11 @@ const router = createBrowserRouter([
       {
         path: "admission-letters",
         element: <AdmissionLetters />,
+      },
+
+      {
+        path: "import-history",
+        element: <ImportHistory />,
       },
     ],
   },

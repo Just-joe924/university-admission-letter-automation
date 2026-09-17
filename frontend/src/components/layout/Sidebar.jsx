@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   Users,
   FileText,
+  History,
   Mail,
   LogOut,
   X,
@@ -29,6 +30,11 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
       label: "Admission Letters",
       path: "/admin/admission-letters",
       icon: FileText,
+    },
+    {
+      label: "Import History",
+      path: "/admin/import-history",
+      icon: History,
     },
     {
       label: "Email Logs",
