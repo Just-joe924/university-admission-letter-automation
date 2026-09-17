@@ -26,11 +26,21 @@ test("the backend doesn't calculate admission numbers itself", () => {
     assert.doesNotMatch(source, /["'`]ADM\//, file);
   }
 
-  // Count queries exist only for dashboard statistics.
+  // Count queries are only for statistics and paging, never for numbering.
   const countQueries = sources
     .filter(([, source]) => /count:\s*"exact"/.test(source))
-    .map(([file]) => basename(file));
-  assert.deepEqual(countQueries, ["dashboard.service.js"]);
+    .map(([file]) => basename(file))
+    .sort();
+  assert.deepEqual(countQueries, [
+    "dashboard.service.js",
+    "importHistory.service.js",
+    "importRow.service.js",
+  ]);
+
+  for (const file of ["student.service.js", "studentImport.service.js"]) {
+    const [, source] = sources.find(([path]) => path.endsWith(file));
+    assert.doesNotMatch(source, /count:\s*"exact"/, file);
+  }
 });
 
 test(

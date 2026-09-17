@@ -16,7 +16,7 @@ import {
   deadlock,
   emailConflict,
 } from "./helpers/fakeSupabase.js";
-import { csvBuffer, validStudent } from "./helpers/fixtures.js";
+import { csvBuffer, testAdmin, validStudent } from "./helpers/fixtures.js";
 
 const useFakeApi = (options) => {
   const api = createFakeStudentsApi(options);
@@ -88,10 +88,11 @@ test("manual creation refuses to save when database numbering isn't set up", asy
 test("bulk import uses the same creation path and gets numbers from the database", async () => {
   const api = useFakeApi();
 
-  const result = await importStudentsFromFile(
-    csvBuffer([validStudent(1), validStudent(2), validStudent(3)]),
-    "students.csv"
-  );
+  const result = await importStudentsFromFile({
+    buffer: csvBuffer([validStudent(1), validStudent(2), validStudent(3)]),
+    fileName: "students.csv",
+    admin: testAdmin,
+  });
 
   const inserts = insertRequests(api);
   assert.equal(inserts.length, 1, "one all-or-nothing request");
@@ -105,6 +106,12 @@ test("bulk import uses the same creation path and gets numbers from the database
   assert.deepEqual(
     result.students.map((student) => student.admission_number),
     ["ADM/2026/00001", "ADM/2026/00002", "ADM/2026/00003"]
+  );
+
+  // The spreadsheet is parsed in memory and never uploaded anywhere.
+  assert.ok(
+    !api.state.requests.some((request) => request.path.startsWith("/storage/")),
+    "no file is written to storage"
   );
 });
 

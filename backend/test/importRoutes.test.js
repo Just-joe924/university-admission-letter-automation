@@ -92,6 +92,24 @@ test("bulk import endpoints require an admin token", async () => {
   }
 });
 
+test("import history endpoints require an admin token", async () => {
+  const importId = "11111111-1111-4111-8111-111111111111";
+
+  const paths = [
+    "/api/students/imports",
+    `/api/students/imports/${importId}`,
+    `/api/students/imports/${importId}/errors`,
+    `/api/students/imports/${importId}/errors/download`,
+  ];
+
+  for (const path of paths) {
+    const response = await fetch(url(apiServer, path));
+
+    assert.equal(response.status, 401, path);
+    assert.equal((await response.json()).message, "No token provided");
+  }
+});
+
 test("the existing single-student route still validates before saving", async () => {
   const response = await fetch(url(apiServer, "/api/students"), {
     method: "POST",

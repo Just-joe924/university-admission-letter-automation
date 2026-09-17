@@ -10,6 +10,15 @@ export const HEADER = [
   "session",
 ];
 
+// The admin identity the auth middleware puts on the request.
+export const testAdmin = {
+  id: "admin-1",
+  authUserId: "auth-user-1",
+  name: "Ada Admin",
+  email: "ada@example.com",
+  role: "admin",
+};
+
 export const validStudent = (n, overrides = {}) => ({
   full_name: `Student ${n}`,
   email: `student${n}@example.com`,
@@ -40,9 +49,17 @@ export const workbookBuffer = (students, bookType = "xlsx", header = HEADER) => 
 };
 
 // In-memory stand-ins for the import's database calls, recording how they were
-// used. Inserted students get admission numbers the way the database assigns them.
-export const fakeDeps = ({ existing = [], lookupError = null, insertResult } = {}) => {
-  const calls = { find: [], insert: [] };
+// used. Inserted students get admission numbers the way the database assigns
+// them, and import history calls are captured for assertions.
+export const fakeDeps = ({
+  existing = [],
+  lookupError = null,
+  insertResult,
+  claimResult,
+  createImportResult,
+  importRecord = {},
+} = {}) => {
+  const calls = { find: [], insert: [], createImport: [], claim: [], update: [], rows: [] };
 
   const deps = {
     findExistingStudents: async (query) => {
@@ -61,6 +78,32 @@ export const fakeDeps = ({ existing = [], lookupError = null, insertResult } = {
           error: null,
         }
       );
+    },
+    createImportRecord: async (payload) => {
+      calls.createImport.push(payload);
+      return (
+        createImportResult ?? {
+          data: { id: "import-1", ...payload, ...importRecord },
+          error: null,
+        }
+      );
+    },
+    claimImport: async (query) => {
+      calls.claim.push(query);
+      return (
+        claimResult ?? {
+          data: { id: query.importId, status: "processing", metadata: {}, ...importRecord },
+          error: null,
+        }
+      );
+    },
+    updateImport: async (importId, updates) => {
+      calls.update.push({ importId, updates });
+      return { data: { id: importId, ...updates }, error: null };
+    },
+    saveImportRows: async (rows) => {
+      calls.rows.push(rows);
+      return { error: null };
     },
   };
 
